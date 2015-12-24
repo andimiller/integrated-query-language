@@ -23,8 +23,15 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
-  "Evaluating an equality that's not true" should "return true" in {
+  "Evaluating an equality that's true" should "return true" in {
     Parser.Equality.parse("\"foo\"=\"foo\"") match {
+      case Success(v, i) =>
+        v.eval(new Ast.World(Map())) must equal(Ast.Bool(true))
+    }
+  }
+
+  "Evaluating a lessthan that's true" should "return true" in {
+    Parser.LessThan.parse("4<42") match {
       case Success(v, i) =>
         v.eval(new Ast.World(Map())) must equal(Ast.Bool(true))
     }

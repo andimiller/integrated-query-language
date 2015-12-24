@@ -30,6 +30,11 @@ class ParserSpec extends FlatSpec with MustMatchers {
     Parser.string.parse(input) must equal(Success(Ast.Text(input.replace("\"", "")), input.length))
   }
 
+  "Integers" should "parse correctly" in {
+    val input = "42"
+    val r = Parser.number.parse(input)
+    println(r)
+  }
 
   "References" should "be valid if they don't use special characters" in {
     val input = "reference"
@@ -44,8 +49,8 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "References" should "cut off after it looks valid" in {
     val input = "foo bar"
-    val r = Parser.reference.parse(input)
-    println(r)
+    val marker = input.indexOf(" ")
+    Parser.reference.parse(input) must equal(Success(Ast.Field(input.substring(0, marker)), marker))
   }
 
   "Equality statements" should "be valid with two references" in {

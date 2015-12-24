@@ -28,9 +28,16 @@ object Parser {
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
   val reference =
     P( (letter | digits) ~ (letter | digits).rep).!.map(Ast.Field)
-  val Expression = reference | string
+  val number =
+    P(  digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
+  val Expression = number | string | reference
   val Equality =
     P( Expression ~/ space.? ~/  "=" ~/ space.? ~/ Expression).map(t => new Ast.Equals(t._1, t._2))
+  val LessThan =
+    P( Expression ~/ space.? ~/  "<" ~/ space.? ~/ Expression).map(t => new Ast.LessThan(t._1, t._2))
+  val MoreThan =
+    P( Expression ~/ space.? ~/  ">" ~/ space.? ~/ Expression).map(t => new Ast.MoreThan(t._1, t._2))
+
 
 }
 
