@@ -93,6 +93,11 @@ object Evaluator {
             case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value || r.value)
             case _ => throw new UnsupportedOperationException
           }
+        case and: Ast.AND =>
+          (lhs, rhs) match {
+            case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value && r.value)
+            case _ => throw new UnsupportedOperationException
+          }
 
       }
     }

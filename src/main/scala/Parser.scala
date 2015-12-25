@@ -42,7 +42,7 @@ object Parser {
   val boolean = P("true" | "false").!.map(_ match { case "true" => Ast.Bool(true) case "false" => Ast.Bool(false)})
 
   // code
-  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression)
+  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression | operatorExpression)
   val Equality =
     P( Expression ~/ space.? ~/  "=" ~/ space.? ~/ Expression).map(t => new Ast.Equals(t._1, t._2))
   val LessThan =

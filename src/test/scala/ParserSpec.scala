@@ -74,5 +74,10 @@ class ParserSpec extends FlatSpec with MustMatchers {
     Parser.boolean.parse("false") must equal(Success(Ast.Bool(false), 5))
   }
 
+  "BiggerThan" should "parse correctly via Expression" in {
+    val input = ".cats < 10"
+    val r = Parser.Expression.parse(input)
+
+  }
 
 }
