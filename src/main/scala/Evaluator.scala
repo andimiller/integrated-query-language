@@ -1,9 +1,13 @@
+import scala.util.Try
+
 /**
   * Created by andi on 23/12/2015.
   */
 object Evaluator {
   class TypeMappingFailed extends Exception
   class UnsupportedFunctionArgumentTypes extends Exception
+  class MaximumEvalStackDepth extends Exception
+
   trait Evaluator[A] {
     def eval(world: Ast.World): Ast.Pipeline
   }
@@ -32,36 +36,46 @@ object Evaluator {
       p match {
         case r: Ast.Reference => r.eval(world)
         case d: Ast.Data => d
+        case e: Ast.Expression => e.eval(world)
       }
     }
   }
 
 
   implicit class EvaluatableExpression(e: Ast.Expression) extends Evaluator[Ast.Expression] {
-    override def eval(world: Ast.World): Ast.Pipeline = {
-      e match {
-        case equals: Ast.Equals => Ast.Bool(equals.lhs.eval(world) == equals.rhs.eval(world))
-        case lessthan: Ast.LessThan =>
-          val lhs = lessthan.lhs.eval(world)
-          val rhs = lessthan.rhs.eval(world)
 
+    def resolveUntilData(t: Ast.Pipeline, limit: Int = 250)(world: Ast.World): Ast.Data = {
+      val r = t.eval(world)
+      if (limit == 0) {
+        throw new MaximumEvalStackDepth
+      }
+      r match {
+        case d: Ast.Data => d
+        case p: Ast.Pipeline => resolveUntilData(p, limit-1)(world)
+      }
+    }
+
+    override def eval(world: Ast.World): Ast.Pipeline = {
+      val lhs = resolveUntilData(e.getLhs)(world)
+      val rhs = resolveUntilData(e.getRhs)(world)
+      e match {
+        case equals: Ast.Equals => Ast.Bool(lhs == rhs)
+        case lessthan: Ast.LessThan =>
           (lhs, rhs) match {
-            case (l: Ast.Reference, r) => new Ast.LessThan(l.eval(world), r).eval(world)
-            case (l, r: Ast.Reference) => new Ast.LessThan(l, r.eval(world)).eval(world)
             case (l: Ast.Integer, r: Ast.Integer) => Ast.Bool(l.value < r.value)
             case _ =>
               throw new UnsupportedOperationException
-
           }
 
         case morethan: Ast.MoreThan =>
-          val lhs = morethan.lhs.eval(world)
-          val rhs = morethan.rhs.eval(world)
-
           (lhs, rhs) match {
-            case (l: Ast.Reference, r) => new Ast.MoreThan(l.eval(world), r).eval(world)
-            case (l, r: Ast.Reference) => new Ast.MoreThan(l, r.eval(world)).eval(world)
             case (l: Ast.Integer, r: Ast.Integer) => Ast.Bool(l.value > r.value)
+            case _ => throw new UnsupportedOperationException
+          }
+
+        case or: Ast.OR =>
+          (lhs, rhs) match {
+            case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value || r.value)
             case _ => throw new UnsupportedOperationException
           }
 

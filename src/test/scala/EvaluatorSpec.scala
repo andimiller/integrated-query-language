@@ -36,4 +36,11 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         v.eval(new Ast.World(Map())) must equal(Ast.Bool(true))
     }
   }
+
+  "Evaluating a multi-level OR that's true" should "return true" in {
+    Parser.OR.parse("(1=1) || (2=2)") match {
+      case Success(v, i) =>
+        v.eval(new Ast.World(Map())) must equal(Ast.Bool(true))
+    }
+  }
 }

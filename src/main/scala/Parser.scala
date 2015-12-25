@@ -30,13 +30,21 @@ object Parser {
     P( (letter | digits) ~ (letter | digits).rep).!.map(Ast.Field)
   val number =
     P(  digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
-  val Expression = number | string | reference
+  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | bracketedExpression)
   val Equality =
     P( Expression ~/ space.? ~/  "=" ~/ space.? ~/ Expression).map(t => new Ast.Equals(t._1, t._2))
   val LessThan =
     P( Expression ~/ space.? ~/  "<" ~/ space.? ~/ Expression).map(t => new Ast.LessThan(t._1, t._2))
   val MoreThan =
     P( Expression ~/ space.? ~/  ">" ~/ space.? ~/ Expression).map(t => new Ast.MoreThan(t._1, t._2))
+  val AND =
+    P( Expression ~/ space.? ~/  "&&" ~/ space.? ~/ Expression).map(t => new Ast.AND(t._1, t._2))
+  val OR =
+    P( Expression ~/ space.? ~/  "||" ~/ space.? ~/ Expression).map(t => new Ast.OR(t._1, t._2))
+  val XOR =
+    P( Expression ~/ space.? ~/  "^" ~/ space.? ~/ Expression).map(t => new Ast.XOR(t._1, t._2))
+  val operatorExpression = P(Equality | LessThan | MoreThan | AND | OR | XOR)
+  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ operatorExpression ~ ")")
 
 
 }

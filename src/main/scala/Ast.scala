@@ -17,9 +17,15 @@ object Ast {
   // types
   case object None extends Data
   // operator types
-  sealed class Expression(lhs: Pipeline, rhs: Pipeline)
+  sealed class Expression(lhs: Pipeline, rhs: Pipeline) extends Pipeline {
+    def getLhs = lhs
+    def getRhs = rhs
+  }
   case class Equals(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
   case class MoreThan(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
   case class LessThan(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
+  case class AND(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
+  case class OR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
+  case class XOR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
   //case object Not extends Expression
 }
