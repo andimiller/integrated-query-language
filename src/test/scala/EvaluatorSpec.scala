@@ -74,7 +74,27 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """(.favouriteAnimal = "cat") && (.numberOfAnimals > 1) """
     Parser.program.parse(inputFilter) match {
       case Success(exp, count) =>
-        println(exp)
+        val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
+        result must equal(Ast.Bool(true))
+        val inputJson2 = inputJson.replace("3", "0")
+        val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
+        result2 must equal(Ast.Bool(false))
+    }
+  }
+
+  "Evaluating multi-level AND with a MoreThan over multi-level JSON in a production-style manner" should "function correctly" in {
+    val inputJson =
+      """ {
+        |   "data": {
+        |    "favouriteAnimal": "cat",
+        |     "numberOfAnimals": 3
+        |   }
+        |}
+      """.stripMargin
+    val inputFilter =
+      """(.data.favouriteAnimal = "cat") && (.data.numberOfAnimals > 1) """
+    Parser.program.parse(inputFilter) match {
+      case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
         val inputJson2 = inputJson.replace("3", "0")
