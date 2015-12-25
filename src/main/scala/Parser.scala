@@ -42,21 +42,22 @@ object Parser {
   val boolean = P("true" | "false").!.map(_ match { case "true" => Ast.Bool(true) case "false" => Ast.Bool(false)})
 
   // code
-  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression | operatorExpression)
-  val Equality =
-    P( Expression ~/ space.? ~/  "=" ~/ space.? ~/ Expression).map(t => new Ast.Equals(t._1, t._2))
-  val LessThan =
-    P( Expression ~/ space.? ~/  "<" ~/ space.? ~/ Expression).map(t => new Ast.LessThan(t._1, t._2))
-  val MoreThan =
-    P( Expression ~/ space.? ~/  ">" ~/ space.? ~/ Expression).map(t => new Ast.MoreThan(t._1, t._2))
-  val AND =
-    P( Expression ~/ space.? ~/  "&&" ~/ space.? ~/ Expression).map(t => new Ast.AND(t._1, t._2))
-  val OR =
-    P( Expression ~/ space.? ~/  "||" ~/ space.? ~/ Expression).map(t => new Ast.OR(t._1, t._2))
-  val XOR =
-    P( Expression ~/ space.? ~/  "^" ~/ space.? ~/ Expression).map(t => new Ast.XOR(t._1, t._2))
-  val operatorExpression = P(Equality | LessThan | MoreThan | AND | OR | XOR)
-  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ operatorExpression ~ ")")
+  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression)
+  val OperatorExpression =
+    P( Expression ~/ space.? ~/  ("=" | "<" | ">" | "&&" | "||" | "^").!  ~/ space.? ~/ Expression).map { e =>
+      val (l, operator, r) = e
+      operator match {
+        case "="  => Ast.Equals(l, r)
+        case "<"  => Ast.LessThan(l, r)
+        case ">"  => Ast.MoreThan(l, r)
+        case "&&" => Ast.AND(l, r)
+        case "||" => Ast.OR(l, r)
+        case "^"  => Ast.XOR(l, r)
+      }
+
+    }
+  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
+  val program = P(OperatorExpression | Expression)
 
 
 }

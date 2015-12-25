@@ -56,12 +56,12 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "Equality statements" should "be valid with two references" in {
     val input = ".foo=.bar"
-    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
   }
 
   "Equality statements" should "be valid with two references and whitespace" in {
     val input = ".foo = .bar"
-    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
   }
 
   "Arrays" should "happen" in {

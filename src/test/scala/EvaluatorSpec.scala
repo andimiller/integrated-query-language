@@ -20,28 +20,28 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   }
 
   "Evaluating an equality that's not true" should "return false" in {
-    Parser.Equality.parse("\"foo\"=\"nope\"") match {
+    Parser.OperatorExpression.parse("\"foo\"=\"nope\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
     }
   }
 
   "Evaluating an equality that's true" should "return true" in {
-    Parser.Equality.parse("\"foo\"=\"foo\"") match {
+    Parser.OperatorExpression.parse("\"foo\"=\"foo\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
     }
   }
 
   "Evaluating a lessthan that's true" should "return true" in {
-    Parser.LessThan.parse("4<42") match {
+    Parser.OperatorExpression.parse("4<42") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
     }
   }
 
   "Evaluating a multi-level OR that's true" should "return true" in {
-    Parser.OR.parse("(1=1)||(2=2)") match {
+    Parser.OperatorExpression.parse("(1=1)||(2=2)") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
     }
@@ -56,7 +56,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.favouriteAnimal = "cat") && (.numberOfAnimals = 3) """
-    Parser.AND.parse(inputFilter) match {
+    Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
@@ -72,10 +72,14 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.favouriteAnimal = "cat") && (.numberOfAnimals > 1) """
-    Parser.Expression.parse(inputFilter) match {
+    Parser.program.parse(inputFilter) match {
       case Success(exp, count) =>
+        println(exp)
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
+        val inputJson2 = inputJson.replace("3", "0")
+        val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
+        result2 must equal(Ast.Bool(false))
     }
   }
 }
