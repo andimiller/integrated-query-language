@@ -7,6 +7,7 @@ object Parser {
     override def toString() = name
   }
 
+  // basics
   val Whitespace = NamedFunction(" \n".contains(_: Char), "Whitespace")
   val Digits = NamedFunction('0' to '9' contains (_: Char), "Digits")
   val StringChars = NamedFunction(!"\"\\".contains(_: Char), "StringChars")
@@ -22,7 +23,10 @@ object Parser {
   val unicodeEscape = P( "u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit )
   val escape        = P( "\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape) )
 
+  // data structures
+  val array = P( "[" ~/ Expression ~ ("," ~ space.? ~ Expression).rep.? ~ "]").map( t => t._2.map(_.+:(t._1)).getOrElse(Seq(t._1)))
 
+  // programs
   val strChars = P( CharsWhile(StringChars) )
   val string =
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)

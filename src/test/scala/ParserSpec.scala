@@ -63,5 +63,10 @@ class ParserSpec extends FlatSpec with MustMatchers {
     Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field("foo"), Ast.Field("bar")), input.length))
   }
 
+  "Arrays" should "happen" in {
+    val input = "[1, 2, 3]"
+    Parser.array.parse(input) must equal(Success(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3)), input.length))
+  }
+
 
 }
