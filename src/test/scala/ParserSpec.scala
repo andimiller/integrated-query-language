@@ -69,5 +69,10 @@ class ParserSpec extends FlatSpec with MustMatchers {
     Parser.array.parse(input) must equal(Success(Ast.Array(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3))), input.length))
   }
 
+  "Booleans" should "happen" in {
+    Parser.boolean.parse("true") must equal(Success(Ast.Bool(true), 4))
+    Parser.boolean.parse("false") must equal(Success(Ast.Bool(false), 5))
+  }
+
 
 }
