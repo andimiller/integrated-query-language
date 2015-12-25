@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper
 import fastparse.core.Parsed.Success
 import org.scalameter._
 
@@ -5,8 +6,9 @@ import org.scalameter._
   * Created by andi on 24/12/2015.
   */
 object EvaluatorBench extends App {
-  val world = new Ast.World(Map("foo" -> "bar"))
-  val world2 = new Ast.World(Map("foo" -> "baz"))
+  val OM = new ObjectMapper()
+  val world = new Ast.World(OM.readTree("{\"foo\":\"bar\"}"))
+  val world2 = new Ast.World(OM.readTree("{\"foo\":\"baz\"}"))
 
   val benchConfig = config(
     Key.exec.benchRuns -> 100000

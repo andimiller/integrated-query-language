@@ -1,9 +1,13 @@
-import scala.util.Try
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+
+import scala.collection.JavaConverters._
 
 /**
   * Created by andi on 23/12/2015.
   */
 object Evaluator {
+  val OM = new ObjectMapper()
+
   class TypeMappingFailed extends Exception
   class UnsupportedFunctionArgumentTypes extends Exception
   class MaximumEvalStackDepth extends Exception
@@ -18,14 +22,25 @@ object Evaluator {
       case i: Integer => Some(Ast.Integer(i))
       case _ => throw new TypeMappingFailed
     }
+  }
 
+  def jsonNodeToAst(j: JsonNode): Option[Ast.Pipeline] = {
+    j match {
+      case i if i.isInt => Some(Ast.Integer(i.asInt()))
+      case s if s.isTextual => Some(Ast.Text(s.asText()))
+      case b if b.isBoolean => Some(Ast.Bool(b.asBoolean()))
+      case a if a.isArray =>
+        val array = a.elements().asScala.map(jsonNodeToAst).flatten.toSeq
+        Some(Ast.Array(array))
+    }
   }
 
   implicit class EvaluatableReference(r: Ast.Reference) extends Evaluator[Ast.Reference] {
     override def eval(world: Ast.World): Ast.Pipeline = {
       r match {
         case f: Ast.Field =>
-          world.globals.get(f.name).flatMap(anyToAst).getOrElse(Ast.None)
+          val resolved = f.path.foldLeft(world.globals)((node, path) => node.get(path))
+          jsonNodeToAst(resolved).getOrElse(Ast.None)
       }
     }
   }

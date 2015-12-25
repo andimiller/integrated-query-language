@@ -33,39 +33,40 @@ class ParserSpec extends FlatSpec with MustMatchers {
   "Integers" should "parse correctly" in {
     val input = "42"
     val r = Parser.number.parse(input)
-    println(r)
+    r must equal(Success(Ast.Integer(42), input.length))
   }
 
   "References" should "be valid if they don't use special characters" in {
-    val input = "reference"
-    Parser.reference.parse(input) must equal(Success(Ast.Field("reference"), input.length))
+    val input = ".reference"
+    Parser.reference.parse(input) must equal(Success(Ast.Field(Seq("reference")), input.length))
   }
 
-  "References" should "not be valid with quotes" in {
-    val input = "\"hello"
+  "References" should "cut off a weird special characters" in {
+    val input = ".\"hello"
     val r = Parser.reference.parse(input)
-    r.isInstanceOf[Failure] must equal(true)
+    println(r)
+    r must equal(Success(Ast.Field(Seq()), 1))
   }
 
   "References" should "cut off after it looks valid" in {
-    val input = "foo bar"
+    val input = ".foo .bar"
     val marker = input.indexOf(" ")
-    Parser.reference.parse(input) must equal(Success(Ast.Field(input.substring(0, marker)), marker))
+    Parser.reference.parse(input) must equal(Success(Ast.Field(Seq(input.substring(0, marker).stripPrefix("."))), marker))
   }
 
   "Equality statements" should "be valid with two references" in {
-    val input = "foo=bar"
-    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field("foo"), Ast.Field("bar")), input.length))
+    val input = ".foo=.bar"
+    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
   }
 
   "Equality statements" should "be valid with two references and whitespace" in {
-    val input = "foo = bar"
-    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field("foo"), Ast.Field("bar")), input.length))
+    val input = ".foo = .bar"
+    Parser.Equality.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
   }
 
   "Arrays" should "happen" in {
     val input = "[1, 2, 3]"
-    Parser.array.parse(input) must equal(Success(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3)), input.length))
+    Parser.array.parse(input) must equal(Success(Ast.Array(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3))), input.length))
   }
 
 

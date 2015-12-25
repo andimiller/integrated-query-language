@@ -24,17 +24,25 @@ object Parser {
   val escape        = P( "\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape) )
 
   // data structures
-  val array = P( "[" ~/ Expression ~ ("," ~ space.? ~ Expression).rep.? ~ "]").map( t => t._2.map(_.+:(t._1)).getOrElse(Seq(t._1)))
+  val array = P( "[" ~/ Expression ~ ("," ~ space.? ~ Expression).rep.? ~ "]").map( t => t._2.map(_.+:(t._1)).getOrElse(Seq(t._1))).map(Ast.Array)
 
-  // programs
+  // types
   val strChars = P( CharsWhile(StringChars) )
   val string =
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
   val reference =
-    P( (letter | digits) ~ (letter | digits).rep).!.map(Ast.Field)
+    P( ("." ~ (letter | digits).rep.!) ~/ ("." ~/ (letter | digits).rep.!).rep ).map( t =>
+      t match {
+        case (head, tail) if (head=="") && tail.isEmpty => Ast.Field(Seq())
+        case (head, tail) => Ast.Field(tail.+:(head))
+      }
+    )
   val number =
     P(  digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
-  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | bracketedExpression)
+  val boolean = P("true" | "false").!.map(_ match { case "true" => Ast.Bool(true) case "false" => Ast.Bool(false)})
+
+  // code
+  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression)
   val Equality =
     P( Expression ~/ space.? ~/  "=" ~/ space.? ~/ Expression).map(t => new Ast.Equals(t._1, t._2))
   val LessThan =
