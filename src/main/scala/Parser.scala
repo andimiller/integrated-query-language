@@ -44,10 +44,10 @@ object Parser {
   // code
   val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression)
   val OperatorExpression =
-    P( Expression ~/ space.? ~/  ("=" | "<" | ">" | "&&" | "||" | "^").!  ~/ space.? ~/ Expression).map { e =>
+    P( Expression ~/ space.? ~/  ("==" | "<" | ">" | "&&" | "||" | "^").!  ~/ space.? ~/ Expression).map { e =>
       val (l, operator, r) = e
       operator match {
-        case "="  => Ast.Equals(l, r)
+        case "=="  => Ast.Equals(l, r)
         case "<"  => Ast.LessThan(l, r)
         case ">"  => Ast.MoreThan(l, r)
         case "&&" => Ast.AND(l, r)

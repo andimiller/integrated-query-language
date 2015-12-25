@@ -20,14 +20,14 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   }
 
   "Evaluating an equality that's not true" should "return false" in {
-    Parser.OperatorExpression.parse("\"foo\"=\"nope\"") match {
+    Parser.OperatorExpression.parse("\"foo\"==\"nope\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
     }
   }
 
   "Evaluating an equality that's true" should "return true" in {
-    Parser.OperatorExpression.parse("\"foo\"=\"foo\"") match {
+    Parser.OperatorExpression.parse("\"foo\"==\"foo\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
     }
@@ -41,7 +41,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   }
 
   "Evaluating a multi-level OR that's true" should "return true" in {
-    Parser.OperatorExpression.parse("(1=1)||(2=2)") match {
+    Parser.OperatorExpression.parse("(1==1)||(2==2)") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
     }
@@ -55,7 +55,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         |}
       """.stripMargin
     val inputFilter =
-      """(.favouriteAnimal = "cat") && (.numberOfAnimals = 3) """
+      """(.favouriteAnimal == "cat") && (.numberOfAnimals == 3) """
     Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
@@ -71,7 +71,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         |}
       """.stripMargin
     val inputFilter =
-      """(.favouriteAnimal = "cat") && (.numberOfAnimals > 1) """
+      """(.favouriteAnimal == "cat") && (.numberOfAnimals > 1) """
     Parser.program.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
@@ -92,7 +92,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         |}
       """.stripMargin
     val inputFilter =
-      """(.data.favouriteAnimal = "cat") && (.data.numberOfAnimals > 1) """
+      """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1) """
     Parser.program.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))

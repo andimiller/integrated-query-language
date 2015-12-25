@@ -19,10 +19,10 @@ object EvaluatorBench extends App {
   }
 
   val parseTime = benchConfig measure {
-    Parser.OperatorExpression.parse(".foo=\"bar\"")
+    Parser.OperatorExpression.parse(".foo==\"bar\"")
   }
   println(s"parser took $parseTime")
-  val filter = Parser.OperatorExpression.parse(".foo=\"bar\"") match {
+  val filter = Parser.OperatorExpression.parse(".foo==\"bar\"") match {
     case Success(e, c) =>
       import Evaluator._
       val evalTime = benchConfig measure {
