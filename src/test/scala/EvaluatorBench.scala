@@ -33,6 +33,7 @@ object EvaluatorBench extends App {
         e.eval(world2)
       }
       println(s"eval on a non-matching target took $evalTime2")
+    case _ => println("unable to compile expression")
 
   }
 
