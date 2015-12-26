@@ -113,7 +113,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.favouriteAnimal == "cat") && (.numberOfAnimals > 1) """
-    Parser.program.parse(inputFilter) match {
+    Parser.filter.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
@@ -135,7 +135,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1) """
-    Parser.program.parse(inputFilter) match {
+    Parser.filter.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
@@ -218,4 +218,17 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case _ => fail("unable to parse query")
     }
   }
+
+  "Insert a static item into the output JSON" should "correctly place it in the output" in {
+    Parser.assignment.parse(".output = 42") match {
+      case Success(v, i) =>
+        val w = new Ast.World(OM.createObjectNode())
+        val result = v.eval(w)
+        result must equal(Ast.Integer(42))
+        w.output.toString must equal("{\"output\":42}")
+      case _ => fail("unable to parse query")
+    }
+  }
+
+
 }

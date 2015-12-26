@@ -39,6 +39,14 @@ object Parser {
         case (head, tail) => Ast.Field(tail.+:(head))
       }
     )
+  val outputReferenceChars = P(letter | digits)
+  val outputReference =
+     P( ("." ~ outputReferenceChars.rep.!) ~/ ("." ~/ outputReferenceChars.rep.!).rep ).map( t =>
+      t match {
+        case (head, tail) if (head=="") && tail.isEmpty => Ast.OutputField(Seq())
+        case (head, tail) => Ast.OutputField(tail.+:(head))
+      }
+    )
   val number =
     P(  digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
   val boolean = P("true" | "false").!.map(_ match { case "true" => Ast.Bool(true) case "false" => Ast.Bool(false)})
@@ -62,8 +70,13 @@ object Parser {
       }
     }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
-  val program = P(OperatorExpression | Expression)
+  val filter = P(OperatorExpression | Expression)
 
+  // transforms
+  val assignment = P(outputReference ~ space.? ~ "=" ~ space.? ~/ Expression).map(Ast.Assignment.tupled)
 
+  // full programs
+  val newline = P("\n" | End)
+  val program = P((assignment ~ newline).rep).map(t => Ast.Program(t))
 }
 

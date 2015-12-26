@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 
 import scala.annotation.tailrec
@@ -37,6 +38,19 @@ object Evaluator {
     }
   }
 
+  def putAstIntoJson(parent: ObjectNode, name: String, value: Ast.Data)(w: Ast.World) = {
+    val primitiveValue = value match {
+      case i: Ast.Integer =>
+        parent.put(name, i.value)
+      case t: Ast.Text    =>
+        parent.put(name, t.value)
+      case b: Ast.Bool    =>
+        parent.put(name, b.value)
+      case a: Ast.Array   => ???
+      case n if n==Ast.None => ???
+    }
+  }
+
   implicit class EvaluatableReference(r: Ast.Reference) extends Evaluator[Ast.Reference] {
     override def eval(world: Ast.World): Ast.Pipeline = {
       r match {
@@ -64,6 +78,22 @@ object Evaluator {
             case item     if item.size==1    => item.head
             case multiple if multiple.size>1 => Ast.Array(multiple)
           }
+        case f: Ast.OutputField =>
+          // traverse the path, creating all the links we need, then return the parent and the name of the thing we're inserting
+          val outputnode = f.path.view.dropRight(1).foldLeft(world.output) { (node, path) =>
+            path match {
+              case s =>
+                val target = Option(node.get(s))
+                target match {
+                  case Some(t) => t
+                  case None =>
+                    node.asInstanceOf[ObjectNode].putObject(path)
+                }
+            }
+          }
+          Ast.SettableOutputField(outputnode.asInstanceOf[ObjectNode], f.path.last)
+        case sof: Ast.SettableOutputField =>
+          throw new UnsupportedOperationException
       }
     }
   }
@@ -147,6 +177,26 @@ object Evaluator {
         case e: Ast.InfixOperator =>
           throw new UnsupportedOperationException
       }
+    }
+  }
+
+  implicit class EvaluatableTransform(t: Ast.Transform) extends Evaluator[Ast.Transform] {
+    override def eval(world: Ast.World): Ast.Pipeline = {
+      t match {
+        case assignment: Ast.Assignment =>
+          val target = assignment.lhs.eval(world).asInstanceOf[Ast.SettableOutputField]
+          val value = resolveUntilData(assignment.rhs)(world)
+          putAstIntoJson(target.parent, target.field, value)(world)
+          value
+      }
+    }
+  }
+
+  implicit class EvaluatableProgram(t: Ast.Program) {
+    def eval(input: JsonNode): JsonNode = {
+      val world = new Ast.World(input, OM.createObjectNode())
+      t.seq.foreach(_.eval(world))
+      world.output
     }
   }
 
