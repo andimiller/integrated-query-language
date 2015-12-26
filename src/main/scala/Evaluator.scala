@@ -80,6 +80,7 @@ object Evaluator {
             case _ =>
               throw new UnsupportedOperationException
           }
+        case pe: Ast.PrefixOperator => throw new UnsupportedFunctionArgumentTypes
       }
     }
   }
@@ -96,13 +97,11 @@ object Evaluator {
             case _ =>
               throw new UnsupportedOperationException
           }
-
         case morethan: Ast.MoreThan =>
           (lhs, rhs) match {
             case (l: Ast.Integer, r: Ast.Integer) => Ast.Bool(l.value > r.value)
             case _ => throw new UnsupportedOperationException
           }
-
         case or: Ast.OR =>
           (lhs, rhs) match {
             case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value || r.value)
@@ -113,7 +112,18 @@ object Evaluator {
             case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value && r.value)
             case _ => throw new UnsupportedOperationException
           }
-
+        case in: Ast.In =>
+          (lhs, rhs) match {
+            case (l: Ast.Data, r: Ast.Array) => Ast.Bool(r.values.contains(l))
+            case _ => throw new UnsupportedOperationException
+          }
+        case xor: Ast.XOR =>
+          (lhs, rhs) match {
+            case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value ^ r.value)
+            case _ => throw new UnsupportedOperationException
+          }
+        case e: Ast.Expression =>
+          throw new UnsupportedOperationException
       }
     }
   }

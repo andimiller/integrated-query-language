@@ -145,4 +145,18 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case _ => fail("unable to parse query")
     }
   }
+
+
+  "Evaluating a containment that's true" should "return true" in {
+    val json =
+      """{
+        |  "data": [1, 2, 3, 4, 5]
+        |}
+      """.stripMargin
+    Parser.OperatorExpression.parse("5 in .data") match {
+      case Success(v, i) =>
+        v.eval(new Ast.World(OM.readTree(json))) must equal(Ast.Bool(true))
+      case _ => fail("unable to parse query")
+    }
+  }
 }

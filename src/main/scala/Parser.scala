@@ -47,7 +47,7 @@ object Parser {
   // code
   val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | bracketedExpression | OperatorExpression )
   val OperatorExpression =
-    P( Expression ~/ space.? ~/  ("==" | "<" | ">" | "&&" | "||" | "^").!  ~/ space.? ~/ Expression).map { e =>
+    P( Expression ~/ space.? ~/  ("==" | "<" | ">" | "&&" | "||" | "^" | "in").!  ~/ space.? ~/ Expression).map { e =>
       val (l, operator, r) = e
       operator match {
         case "=="  => Ast.Equals(l, r)
@@ -56,8 +56,8 @@ object Parser {
         case "&&" => Ast.AND(l, r)
         case "||" => Ast.OR(l, r)
         case "^"  => Ast.XOR(l, r)
+        case "in" => Ast.In(l, r)
       }
-
     }
   val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
   val program = P(OperatorExpression | Expression)

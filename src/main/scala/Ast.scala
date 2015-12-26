@@ -37,5 +37,6 @@ object Ast {
   case class AND(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
   case class OR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
   case class XOR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  //case object Not extends Expression
+  case class In(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
+
 }
