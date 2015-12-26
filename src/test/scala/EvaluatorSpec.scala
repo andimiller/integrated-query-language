@@ -35,6 +35,14 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
+  "Evaluating a non-existent chained reference in an equality check" should "fail gracefully" in {
+    val world = new Ast.World(OM.readTree("{\"foo\": \"fooval\"}"))
+    Parser.OperatorExpression.parse(".bar.baz.foo == \"moo\"") match {
+      case Success(v, i) =>
+        v.eval(world) must equal(Ast.Bool(false))
+    }
+  }
+
   "Evaluating an equality that's not true" should "return false" in {
     Parser.OperatorExpression.parse("\"foo\"==\"nope\"") match {
       case Success(v, i) =>
