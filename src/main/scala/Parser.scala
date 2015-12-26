@@ -30,8 +30,9 @@ object Parser {
   val strChars = P( CharsWhile(StringChars) )
   val string =
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
+  val wildcard = P("*")
   val reference =
-    P( ("." ~ (letter | digits).rep.!) ~/ ("." ~/ (letter | digits).rep.!).rep ).map( t =>
+    P( ("." ~ (letter | digits | wildcard).rep.!) ~/ ("." ~/ (letter | digits | wildcard).rep.!).rep ).map( t =>
       t match {
         case (head, tail) if (head=="") && tail.isEmpty => Ast.Field(Seq())
         case (head, tail) => Ast.Field(tail.+:(head))

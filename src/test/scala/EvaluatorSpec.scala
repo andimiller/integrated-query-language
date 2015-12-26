@@ -159,4 +159,23 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case _ => fail("unable to parse query")
     }
   }
+
+
+  "Tree traversal with star to branch" should "grab all the items" in {
+    val json =
+      """{
+        |  "a": {
+        |   "value": 4
+        |  },
+        |  "b": {
+        |   "value": 8
+        |  }
+        |}
+      """.stripMargin
+    Parser.reference.parse(".*.value") match {
+      case Success(v, i) =>
+        v.eval(new Ast.World(OM.readTree(json))) must equal(Ast.Array(List(Ast.Integer(4), Ast.Integer(8))))
+      case _ => fail("unable to parse query")
+    }
+  }
 }

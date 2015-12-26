@@ -41,9 +41,29 @@ object Evaluator {
     override def eval(world: Ast.World): Ast.Pipeline = {
       r match {
         case f: Ast.Field =>
-          f.path.foldLeft(Option(world.globals)) { (node, path) =>
-            node.flatMap(n => Option(n.get(path)))
-          }.flatMap(jsonNodeToAst).getOrElse(Ast.None)
+          f.path.foldLeft(Seq(world.globals)) { (nodes, path) =>
+            path match {
+              // all-capturing star
+              case s if s=="*" =>
+                val arrays = nodes.filter(_.isArray)
+                val maps = nodes.filter(_.isObject)
+                arrays.flatMap(_.elements().asScala) ++ maps.flatMap(_.fields().asScala.map(_.getValue))
+              // star being used to glob map keys
+              case s if s.contains("*") =>
+                val matcher = ("^"+s.replace("*", ".*")+"$").r.pattern
+                nodes.flatMap(_.fields().asScala.filter(kv => matcher.matcher(kv.getKey).matches()).map(_.getValue))
+              // array indexing
+              case s if s.startsWith("[") && s.endsWith("]") && s.stripPrefix("[").stripSuffix("]").forall(_.isDigit) =>
+                nodes.map(_.get(Integer.parseInt(s.stripPrefix("[").stripSuffix("]"))))
+              // normal traversal
+              case s =>
+                nodes.flatMap(n => Option(n.get(s)))
+            }
+          }.flatMap(jsonNodeToAst) match {
+            case empty    if empty.isEmpty   => Ast.None
+            case item     if item.size==1    => item.head
+            case multiple if multiple.size>1 => Ast.Array(multiple)
+          }
       }
     }
   }
