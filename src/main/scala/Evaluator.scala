@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 /**
@@ -59,6 +60,7 @@ object Evaluator {
     }
   }
 
+  @tailrec
   def resolveUntilData(t: Ast.Pipeline, limit: Int = 250)(world: Ast.World): Ast.Data = {
     val r = t.eval(world)
     if (limit == 0) {
