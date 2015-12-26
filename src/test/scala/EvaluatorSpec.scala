@@ -63,6 +63,14 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
+  "Evaluating an equality that's NOT true" should "return true" in {
+    Parser.Expression.parse("!(\"foo\"==\"foo\")") match {
+      case Success(v, i) =>
+        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
+      case other => fail("unable to parse query")
+    }
+  }
+
   "Evaluating a lessthan that's true" should "return true" in {
     Parser.OperatorExpression.parse("4<42") match {
       case Success(v, i) =>

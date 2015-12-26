@@ -41,8 +41,11 @@ object Parser {
     P(  digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
   val boolean = P("true" | "false").!.map(_ match { case "true" => Ast.Bool(true) case "false" => Ast.Bool(false)})
 
+  // Nots
+  val Notted = P("!" ~ space.? ~/ Expression).map(Ast.Not)
+
   // code
-  val Expression: Parser[Ast.Pipeline] = P(number | string | reference | boolean | bracketedExpression)
+  val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | bracketedExpression | OperatorExpression )
   val OperatorExpression =
     P( Expression ~/ space.? ~/  ("==" | "<" | ">" | "&&" | "||" | "^").!  ~/ space.? ~/ Expression).map { e =>
       val (l, operator, r) = e

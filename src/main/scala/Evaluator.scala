@@ -54,24 +54,37 @@ object Evaluator {
         case r: Ast.Reference => r.eval(world)
         case d: Ast.Data => d
         case e: Ast.Expression => e.eval(world)
+        case pe: Ast.PrefixOperator => pe.eval(world)
       }
     }
   }
 
+  def resolveUntilData(t: Ast.Pipeline, limit: Int = 250)(world: Ast.World): Ast.Data = {
+    val r = t.eval(world)
+    if (limit == 0) {
+      throw new MaximumEvalStackDepth
+    }
+    r match {
+      case d: Ast.Data => d
+      case p: Ast.Pipeline => resolveUntilData(p, limit-1)(world)
+    }
+  }
 
-  implicit class EvaluatableExpression(e: Ast.Expression) extends Evaluator[Ast.Expression] {
-
-    def resolveUntilData(t: Ast.Pipeline, limit: Int = 250)(world: Ast.World): Ast.Data = {
-      val r = t.eval(world)
-      if (limit == 0) {
-        throw new MaximumEvalStackDepth
-      }
-      r match {
-        case d: Ast.Data => d
-        case p: Ast.Pipeline => resolveUntilData(p, limit-1)(world)
+  implicit class EvaluatablePrefixExpression(pe: Ast.PrefixOperator) extends Evaluator[Ast.PrefixOperator] {
+    override def eval(world: Ast.World): Ast.Pipeline = {
+      val rhs = resolveUntilData(pe.getRhs)(world)
+      pe match {
+        case n: Ast.Not =>
+          rhs match {
+            case rhs: Ast.Bool => Ast.Bool(!rhs.value)
+            case _ =>
+              throw new UnsupportedOperationException
+          }
       }
     }
+  }
 
+  implicit class EvaluatableExpression(e: Ast.Expression) extends Evaluator[Ast.Expression] {
     override def eval(world: Ast.World): Ast.Pipeline = {
       val lhs = resolveUntilData(e.getLhs)(world)
       val rhs = resolveUntilData(e.getRhs)(world)
