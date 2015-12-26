@@ -11,7 +11,6 @@ object Parser {
   val Whitespace = NamedFunction(" \n".contains(_: Char), "Whitespace")
   val Digits = NamedFunction('0' to '9' contains (_: Char), "Digits")
   val StringChars = NamedFunction(!"\"\\".contains(_: Char), "StringChars")
-  val ReferenceChars = NamedFunction('a' to 'Z' contains(_: Char), "ReferenceChars")
 
   val space         = P( CharsWhile(Whitespace).? )
   val digits        = P( CharsWhile(Digits))
@@ -31,8 +30,10 @@ object Parser {
   val string =
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
   val wildcard = P("*")
+  val squarebrackets = P("[" | "]")
+  val referenceChars = P(letter | digits | wildcard | squarebrackets)
   val reference =
-    P( ("." ~ (letter | digits | wildcard).rep.!) ~/ ("." ~/ (letter | digits | wildcard).rep.!).rep ).map( t =>
+    P( ("." ~ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep ).map( t =>
       t match {
         case (head, tail) if (head=="") && tail.isEmpty => Ast.Field(Seq())
         case (head, tail) => Ast.Field(tail.+:(head))
