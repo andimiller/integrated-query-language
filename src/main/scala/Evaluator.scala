@@ -26,6 +26,7 @@ object Evaluator {
 
   def jsonNodeToAst(j: JsonNode): Option[Ast.Pipeline] = {
     j match {
+      case n if n == null => Some(Ast.None)
       case i if i.isInt => Some(Ast.Integer(i.asInt()))
       case s if s.isTextual => Some(Ast.Text(s.asText()))
       case b if b.isBoolean => Some(Ast.Bool(b.asBoolean()))
@@ -39,8 +40,9 @@ object Evaluator {
     override def eval(world: Ast.World): Ast.Pipeline = {
       r match {
         case f: Ast.Field =>
-          val resolved = f.path.foldLeft(world.globals)((node, path) => node.get(path))
-          jsonNodeToAst(resolved).getOrElse(Ast.None)
+          f.path.foldLeft(Option(world.globals)) { (node, path) =>
+            node.flatMap(n => Option(n.get(path)))
+          }.flatMap(jsonNodeToAst).getOrElse(Ast.None)
       }
     }
   }
