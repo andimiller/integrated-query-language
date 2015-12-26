@@ -16,6 +16,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.reference.parse(".foo") match {
       case Success(v, i) =>
         v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.Text("fooval"))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -24,6 +25,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.reference.parse(".bar") match {
       case Success(v, i) =>
         v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.None)
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -32,6 +34,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.reference.parse(".bar.baz.foo") match {
       case Success(v, i) =>
         v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.None)
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -40,6 +43,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse(".bar.baz.foo == \"moo\"") match {
       case Success(v, i) =>
         v.eval(world) must equal(Ast.Bool(false))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -47,6 +51,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("\"foo\"==\"nope\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -54,6 +59,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("\"foo\"==\"foo\"") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -61,6 +67,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("4<42") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -68,6 +75,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("(1==1)||(2==2)") match {
       case Success(v, i) =>
         v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -84,6 +92,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -103,6 +112,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         val inputJson2 = inputJson.replace("3", "0")
         val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
         result2 must equal(Ast.Bool(false))
+      case _ => fail("unable to parse query")
     }
   }
 
@@ -124,6 +134,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         val inputJson2 = inputJson.replace("3", "0")
         val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
         result2 must equal(Ast.Bool(false))
+      case _ => fail("unable to parse query")
     }
   }
 }
