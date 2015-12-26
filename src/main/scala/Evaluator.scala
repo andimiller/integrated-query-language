@@ -80,7 +80,7 @@ object Evaluator {
           }
         case f: Ast.OutputField =>
           // traverse the path, creating all the links we need, then return the parent and the name of the thing we're inserting
-          val outputnode = f.path.view.dropRight(1).foldLeft(world.output) { (node, path) =>
+          val outputnode = f.path.init.foldLeft(world.output) { (node, path) =>
             path match {
               case s =>
                 val target = Option(node.get(s))
