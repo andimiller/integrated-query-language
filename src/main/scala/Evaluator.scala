@@ -53,7 +53,7 @@ object Evaluator {
       p match {
         case r: Ast.Reference => r.eval(world)
         case d: Ast.Data => d
-        case e: Ast.Expression => e.eval(world)
+        case e: Ast.InfixOperator => e.eval(world)
         case pe: Ast.PrefixOperator => pe.eval(world)
       }
     }
@@ -85,7 +85,7 @@ object Evaluator {
     }
   }
 
-  implicit class EvaluatableExpression(e: Ast.Expression) extends Evaluator[Ast.Expression] {
+  implicit class EvaluatableInfixExpression(e: Ast.InfixOperator) extends Evaluator[Ast.InfixOperator] {
     override def eval(world: Ast.World): Ast.Pipeline = {
       val lhs = resolveUntilData(e.getLhs)(world)
       val rhs = resolveUntilData(e.getRhs)(world)
@@ -122,7 +122,7 @@ object Evaluator {
             case (l: Ast.Bool, r: Ast.Bool) => Ast.Bool(l.value ^ r.value)
             case _ => throw new UnsupportedOperationException
           }
-        case e: Ast.Expression =>
+        case e: Ast.InfixOperator =>
           throw new UnsupportedOperationException
       }
     }

@@ -27,16 +27,16 @@ object Ast {
   }
   case class Not(rhs: Pipeline) extends PrefixOperator(rhs)
   //    infix operators
-  sealed class Expression(lhs: Pipeline, rhs: Pipeline) extends Pipeline {
+  sealed class InfixOperator(lhs: Pipeline, rhs: Pipeline) extends Pipeline {
     def getLhs = lhs
     def getRhs = rhs
   }
-  case class Equals(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class MoreThan(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class LessThan(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class AND(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class OR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class XOR(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
-  case class In(lhs: Pipeline, rhs: Pipeline) extends Expression(lhs, rhs)
+  case class Equals(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class MoreThan(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class LessThan(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class AND(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class OR(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class XOR(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class In(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
 
 }

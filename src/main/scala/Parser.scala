@@ -59,7 +59,7 @@ object Parser {
         case "in" => Ast.In(l, r)
       }
     }
-  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
+  val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
   val program = P(OperatorExpression | Expression)
 
 
