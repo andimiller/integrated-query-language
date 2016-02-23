@@ -1,3 +1,5 @@
+package net.andimiller.iql
+
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 

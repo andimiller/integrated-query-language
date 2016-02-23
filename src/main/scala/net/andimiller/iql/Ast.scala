@@ -1,5 +1,7 @@
+package net.andimiller.iql
+
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.{ObjectMapper, JsonNode}
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 
 /**
   * Created by andi on 23/12/2015.

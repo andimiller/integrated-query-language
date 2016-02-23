@@ -1,3 +1,4 @@
+package net.andimiller.iql
 
 object Parser {
   import fastparse.all._

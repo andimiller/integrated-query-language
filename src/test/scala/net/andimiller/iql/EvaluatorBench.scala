@@ -1,3 +1,5 @@
+package net.andimiller.iql
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import fastparse.core.Parsed.Success
 import org.scalameter._

@@ -1,5 +1,7 @@
-import org.scalatest.{MustMatchers, FlatSpec}
+package net.andimiller.iql
+
 import fastparse.core.Parsed.Success
+import org.scalatest.{FlatSpec, MustMatchers}
 
 /**
   * Created by andi on 26/12/2015.
