@@ -1,6 +1,8 @@
 name := "integrated-query-language"
 
-version := "1.0"
+organisation := "net.andimiller"
+
+isSnapshot := true
 
 scalaVersion := "2.11.7"
 
@@ -15,3 +17,7 @@ resolvers += "Sonatype OSS Snapshots" at
   "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies += "com.storm-enroute" %% "scalameter-core" % "0.7" % "test"
+
+bintrayReleaseOnPublish in ThisBuild := true
+
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
