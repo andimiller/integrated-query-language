@@ -110,6 +110,12 @@ object Evaluator {
         case pe: Ast.PrefixOperator => pe.eval(world)
       }
     }
+
+    def eval(input: JsonNode): JsonNode = {
+      val world = new Ast.World(input, OM.createObjectNode())
+      val r = p.eval(world)
+      world.output
+    }
   }
 
   @tailrec
