@@ -1,6 +1,6 @@
 name := "integrated-query-language"
 
-organisation := "net.andimiller"
+organization := "net.andimiller"
 
 isSnapshot := true
 
