@@ -21,3 +21,11 @@ libraryDependencies += "com.storm-enroute" %% "scalameter-core" % "0.7" % "test"
 bintrayReleaseOnPublish in ThisBuild := true
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+val circeVersion = "0.6.1"
+
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)

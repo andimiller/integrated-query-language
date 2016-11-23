@@ -2,13 +2,14 @@ package net.andimiller.iql
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import io.circe.JsonObject
 
 /**
   * Created by andi on 23/12/2015.
   */
 object Ast {
   val OM = new ObjectMapper()
-  case class World(globals: JsonNode, var output: JsonNode = OM.createObjectNode())
+  case class World(globals: JsonObject = JsonObject.empty, var output: JsonObject = JsonObject.empty)
   // structural types
   sealed trait Pipeline
   // reference types

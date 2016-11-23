@@ -1,7 +1,8 @@
 package net.andimiller.iql
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import io.circe.Json.{JBoolean, JNumber, JString}
+import io.circe._
+import io.circe.syntax._
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -10,8 +11,6 @@ import scala.collection.JavaConverters._
   * Created by andi on 23/12/2015.
   */
 object Evaluator {
-  val OM = new ObjectMapper()
-
   class TypeMappingFailed extends Exception
   class UnsupportedFunctionArgumentTypes extends Exception
   class MaximumEvalStackDepth extends Exception
@@ -28,26 +27,25 @@ object Evaluator {
     }
   }
 
-  def jsonNodeToAst(j: JsonNode): Option[Ast.Pipeline] = {
+  def jsonNodeToAst(j: Json): Option[Ast.Pipeline] = {
     j match {
       case n if n == null => Some(Ast.None)
-      case i if i.isInt => Some(Ast.Integer(i.asInt()))
-      case s if s.isTextual => Some(Ast.Text(s.asText()))
-      case b if b.isBoolean => Some(Ast.Bool(b.asBoolean()))
+      case i if i.isNumber => i.asNumber.flatMap(_.toInt).map(Ast.Integer)
+      case s if s.isString => s.asString.map(Ast.Text)
+      case b if b.isBoolean => b.asBoolean.map(Ast.Bool)
       case a if a.isArray =>
-        val array = a.elements().asScala.map(jsonNodeToAst).flatten.toSeq
-        Some(Ast.Array(array))
+        a.asArray.map(_.flatMap(jsonNodeToAst)).map(Ast.Array)
     }
   }
 
-  def putAstIntoJson(parent: ObjectNode, name: String, value: Ast.Data)(w: Ast.World) = {
+  def putAstIntoJson(parent: JsonObject, name: String, value: Ast.Data)(w: Ast.World): JsonObject = {
     val primitiveValue = value match {
       case i: Ast.Integer =>
-        parent.put(name, i.value)
+        parent.add(name, JNumber(JsonNumber.fromDecimalStringUnsafe(i.value.toString)))
       case t: Ast.Text    =>
-        parent.put(name, t.value)
+        parent.add(name, JString(t.value))
       case b: Ast.Bool    =>
-        parent.put(name, b.value)
+        parent.add(name, JBoolean(b.value))
       case a: Ast.Array   => ???
       case n if n==Ast.None => ???
     }
@@ -61,6 +59,8 @@ object Evaluator {
             path match {
               // all-capturing star
               case s if s=="*" =>
+                val ar = nodes.filter(_.is)
+
                 val arrays = nodes.filter(_.isArray)
                 val maps = nodes.filter(_.isObject)
                 arrays.flatMap(_.elements().asScala) ++ maps.flatMap(_.fields().asScala.map(_.getValue))
