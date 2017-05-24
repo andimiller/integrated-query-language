@@ -21,8 +21,8 @@ class ParserSpec extends FlatSpec with MustMatchers {
       val (input, expected) = i
       val result = Parser.string.parse(input)
       expected match {
-        case true => result.isInstanceOf[Success[_]] must equal(true)
-        case false => result.isInstanceOf[Failure] must equal(true)
+        case true => result.isInstanceOf[Success[_, _, _]] must equal(true)
+        case false => result.isInstanceOf[Failure[_, _]] must equal(true)
       }
     }
   }
