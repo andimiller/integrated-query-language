@@ -6,7 +6,7 @@ import matryoshka.implicits._
 import scalaz._
 import Scalaz._
 import fastparse.all._
-import matryoshka.data.Mu
+import matryoshka.data._
 
 object Calculator extends App {
 
@@ -72,11 +72,9 @@ object Calculator extends App {
 
   def calculator[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P(operatorExpression ~ End)
 
-
-
   // and usage
 
-  val r =  calculator[Mu[Expr]].parse("((((1+2)+4)+8)*2)").get.value.cata(eval)
+  val r =  calculator[Nu[Expr]].parse("((((-1+2)+4)+8)*2)").get.value.cata(eval)
   println(r)
 
 }

@@ -20,7 +20,7 @@ object Ast {
   sealed trait Data extends Pipeline
   case class Text(value: String) extends Data
   case class Integer(value: Int) extends Data
-  case class Float(value: Float) extends Data
+  case class Float(value: Double) extends Data
   case class Bool(value: Boolean) extends Data
   // containers
   case class Array(values: Seq[Pipeline]) extends Data

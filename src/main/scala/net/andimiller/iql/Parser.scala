@@ -77,7 +77,7 @@ object Parser {
   val assignment = P(outputReference ~ space.? ~ "=" ~ space.? ~/ Expression).map(Ast.Assignment.tupled)
 
   // full programs
-  val newline = P("\n" | End)
+  val newline = P(";" | "\n" | End)
   val program = P((assignment ~ newline).rep).map(t => Ast.Program(t))
 }
 

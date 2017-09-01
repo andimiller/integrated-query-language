@@ -16,8 +16,17 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.3" % "test"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4"
 
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "0.4"
 
 libraryDependencies += "com.slamdata" %% "matryoshka-core" % "0.18.3"
+
+val circeVersion = "0.9.0-M1"
+
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)
 
 resolvers += "Sonatype OSS Snapshots" at
   "https://oss.sonatype.org/content/repositories/releases"
