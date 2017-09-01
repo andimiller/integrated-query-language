@@ -15,12 +15,12 @@ object NewEvaluator {
 
   object referenceCompiler extends Compiler[Ast.Reference] {
     override def compile(t: Ast.Reference): RunnableStep = ReaderT { s: State =>
-       t match {
-         case Ast.Field(f) =>
-           IO {
-             (s, f.foldLeft(s.input.hcursor.asInstanceOf[ACursor]){ case (c, k) =>  c.downField(k) }.focus.getOrElse(Json.Null) )
-           }
-       }
+      t match {
+        case Ast.Field(f) =>
+          IO {
+            (s, f.foldLeft(s.input.hcursor.asInstanceOf[ACursor]){ case (c, k) => c.downField(k) }.focus.getOrElse(Json.Null) )
+          }
+      }
     }
   }
 
