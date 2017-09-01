@@ -27,18 +27,16 @@ object NewEvaluator {
 
   object pipelineCompiler extends Compiler[Ast.Pipeline] {
     override def compile(t: Ast.Pipeline): RunnableStep = ReaderT { s: State =>
-      IO {
-        t match {
-          case r: Ast.Reference => referenceCompiler.compile(r).run(s).unsafeRunSync()
-          case d: Ast.Data => d match {
-            case t: Ast.Text => (s, Json.fromString(t.value))
-            case i: Ast.Integer => (s, Json.fromInt(i.value))
-            case f: Ast.Float => (s, Json.fromDoubleOrNull(f.value))
-            case b: Ast.Bool => (s, Json.fromBoolean(b.value))
-          }
-          case e: Ast.InfixOperator => infixCompiler.compile(e).run(s).unsafeRunSync()
-          case pe: Ast.PrefixOperator => prefixCompiler.compile(pe).run(s).unsafeRunSync()
+      t match {
+        case r: Ast.Reference => referenceCompiler.compile(r).run(s)
+        case d: Ast.Data => d match {
+          case t: Ast.Text => IO { (s, Json.fromString(t.value)) }
+          case i: Ast.Integer => IO { (s, Json.fromInt(i.value)) }
+          case f: Ast.Float => IO { (s, Json.fromDoubleOrNull(f.value)) }
+          case b: Ast.Bool => IO { (s, Json.fromBoolean(b.value)) }
         }
+        case e: Ast.InfixOperator => infixCompiler.compile(e).run(s)
+        case pe: Ast.PrefixOperator => prefixCompiler.compile(pe).run(s)
       }
     }
   }
@@ -109,7 +107,6 @@ object NewEvaluator {
   object assignmentCompiler extends Compiler[Ast.Assignment] {
     override def compile(t: Ast.Assignment): RunnableStep = ReaderT { s: State =>
       pipelineCompiler.compile(t.rhs).run(s).map { case (s1, rhs) =>
-        println(s"setting ${t.lhs.path} to $rhs")
         val output = t.lhs.path.foldLeft(s1.output.hcursor.asInstanceOf[ACursor]){_ path _}.withFocus{_ => rhs}.top.getOrElse(s1.output)
         (s1.copy(output = output), Json.Null)
       }
