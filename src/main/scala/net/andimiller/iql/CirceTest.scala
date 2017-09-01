@@ -9,6 +9,6 @@ object CirceTest extends App {
         |}""".stripMargin
 
   val parsedprogram = Parser.program.parse(program).get.value
-  val results = NewEvaluator.ProgramCompiler.compile(parsedprogram).run(NewEvaluator.State(parse(inputjson).getOrElse(Json.obj()), Json.obj())).unsafeRunSync()
+  val results = NewEvaluator.programCompiler(parsedprogram).run(NewEvaluator.State(parse(inputjson).getOrElse(Json.obj()), Json.obj())).unsafeRunSync()
   println(results)
 }
