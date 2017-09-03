@@ -56,6 +56,16 @@ object NewEvaluator {
           case i: Ast.Integer => IO { (s, Json.fromInt(i.value)) }
           case f: Ast.Float => IO { (s, Json.fromDoubleOrNull(f.value)) }
           case b: Ast.Bool => IO { (s, Json.fromBoolean(b.value)) }
+          case a: Ast.Array =>
+            a.values
+              .map(pipelineCompiler)
+              .foldLeft(IO.pure(s, List.empty[Json])){
+                case (i, r) => i.flatMap {
+                  case (state, j) => r.run(state).map{
+                    case (sr, jr) => (sr, j :+ jr)
+                  }
+                }
+              }.map { case (finalstate, jsons) => (finalstate, Json.arr(jsons:_*)) }
         }
         case e: Ast.InfixOperator => infixCompiler(e).run(s)
         case pe: Ast.PrefixOperator => prefixCompiler(pe).run(s)
@@ -87,7 +97,7 @@ object NewEvaluator {
               }
             case in: Ast.In =>
               (lhs, rhs) match {
-                case (JBoolean(l), JArray(r)) => Json.fromBoolean(r.contains(l))
+                case (l, JArray(r)) => Json.fromBoolean(r.contains(l))
               }
             case xor: Ast.XOR =>
               (lhs, rhs) match {

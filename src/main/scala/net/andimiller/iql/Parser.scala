@@ -31,8 +31,8 @@ object Parser {
   val string =
     P( space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
   val wildcard = P("*")
-  val squarebrackets = P("[" | "]")
-  val referenceChars = P(letter | digits | wildcard | squarebrackets)
+  //val squarebrackets = P("[" | "]")
+  val referenceChars = P(letter | digits | wildcard) //| squarebrackets)
   val reference =
     P( ("." ~ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep ).map( t =>
       t match {
@@ -56,12 +56,11 @@ object Parser {
   val Notted = P("!" ~ space.? ~/ Expression).map(Ast.Not)
 
   // code
-  val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | bracketedExpression | OperatorExpression )
+  val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | array | bracketedExpression | OperatorExpression)
   val OperatorExpression =
-    P( Expression ~/ space.? ~/  ("==" | "<" | ">" | "&&" | "||" | "^" | "in").!  ~/ space.? ~/ Expression).map { e =>
-      val (l, operator, r) = e
+    P(("==" | "<" | ">" | "&&" | "||" | "^" | "in").!  ~/ space.? ~/ Expression ~/ space ~/ Expression).map { case (operator, l, r) =>
       operator match {
-        case "=="  => Ast.Equals(l, r)
+        case "==" => Ast.Equals(l, r)
         case "<"  => Ast.LessThan(l, r)
         case ">"  => Ast.MoreThan(l, r)
         case "&&" => Ast.AND(l, r)
@@ -77,7 +76,7 @@ object Parser {
   val assignment = P(outputReference ~ space.? ~ "=" ~ space.? ~/ Expression).map(Ast.Assignment.tupled)
 
   // full programs
-  val newline = P( "\n" | "\r\n" | "\r" | "\f" | End)
-  val program = P((assignment ~ newline).rep).map(t => Ast.Program(t))
+  val newline = P("\n" | "\r\n" | "\r" | "\f" | End)
+  val program = P((assignment ~/ newline).rep).map(t => Ast.Program(t))
 }
 

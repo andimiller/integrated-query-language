@@ -66,8 +66,13 @@ class ParserSpec extends FlatSpec with MustMatchers {
   }
 
   "Arrays" should "happen" in {
-    val input = "[1, 2, 3]"
+    val input = "[1,2,3]"
     Parser.array.parse(input) must equal(Success(Ast.Array(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3))), input.length))
+  }
+
+  "Arrays" should "happen as expressions" in {
+    val input = "[1,2,3]"
+    Parser.Expression.parse(input) must equal(Success(Ast.Array(List(1,2,3).map(Ast.Integer)), input.length))
   }
 
   "Booleans" should "happen" in {
