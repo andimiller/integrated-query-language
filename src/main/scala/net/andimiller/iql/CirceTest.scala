@@ -2,7 +2,11 @@ package net.andimiller.iql
 import io.circe._, io.circe.parser._
 
 object CirceTest extends App {
-   val program = """.a.value = "a";.b = "b";.a.b.c = "nested";.a.original = .a""".stripMargin
+   val program =
+     """.a.value = "a"
+       |.b = "b"
+       |.a.b.c = "nested"
+       |.a.original = .a""".stripMargin
     val inputjson =
       """{
         | "a": "originala"

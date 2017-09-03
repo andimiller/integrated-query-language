@@ -1,7 +1,5 @@
 package net.andimiller.iql
 
-import java.util.concurrent.RunnableScheduledFuture
-
 import cats.data.{Reader, ReaderT, StateT}
 import io.circe._
 import cats.effect._
@@ -20,6 +18,19 @@ object NewEvaluator {
       }
     }
   }
+
+  object CirceMatchers {
+    object JNumber {
+      def unapply(j: Json): Option[Double] = Option(j).flatMap(_.asNumber.map(_.toDouble))
+    }
+    object JBoolean {
+      def unapply(j: Json): Option[Boolean] = Option(j).flatMap(_.asBoolean)
+    }
+    object JArray {
+      def unapply(j: Json): Option[Vector[Json]] = Option(j).flatMap(_.asArray)
+    }
+  }
+  import CirceMatchers._
 
   case class State(input: Json, output: Json)
 
@@ -60,27 +71,27 @@ object NewEvaluator {
             case equals: Ast.Equals => Json.fromBoolean(lhs == rhs)
             case lessthan: Ast.LessThan =>
               (lhs, rhs) match {
-                case (l, r) if l.isNumber && r.isNumber => Json.fromBoolean(l.asNumber.get.toDouble < r.asNumber.get.toDouble)
+                case (JNumber(l), JNumber(r)) => Json.fromBoolean(l < r)
               }
             case morethan: Ast.MoreThan =>
               (lhs, rhs) match {
-                case (l, r) if l.isNumber && r.isNumber => Json.fromBoolean(l.asNumber.get.toDouble > r.asNumber.get.toDouble)
+                case (JNumber(l), JNumber(r)) => Json.fromBoolean(l > r)
               }
             case or: Ast.OR =>
               (lhs, rhs) match {
-                case (l, r) if l.isBoolean && r.isBoolean => Json.fromBoolean(l.asBoolean.get || r.asBoolean.get)
+                case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l || r)
               }
             case and: Ast.AND =>
               (lhs, rhs) match {
-                case (l, r) if l.isBoolean && r.isBoolean => Json.fromBoolean(l.asBoolean.get && r.asBoolean.get)
+                case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l && r)
               }
             case in: Ast.In =>
               (lhs, rhs) match {
-                case (l, r) if r.isArray => Json.fromBoolean(r.asArray.get.contains(l))
+                case (JBoolean(l), JArray(r)) => Json.fromBoolean(r.contains(l))
               }
             case xor: Ast.XOR =>
               (lhs, rhs) match {
-                case (l, r) if l.isBoolean && r.isBoolean => Json.fromBoolean(l.asBoolean.get ^ r.asBoolean.get)
+                case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l ^ r)
               }
           }
           (s2, result)
