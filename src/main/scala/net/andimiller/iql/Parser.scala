@@ -72,11 +72,17 @@ object Parser {
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
   val filter = P(OperatorExpression | Expression)
 
+  val function = P("required" | "int" | "bool" | "string").!
+
   // transforms
   val assignment = P(outputReference ~ space.? ~ "=" ~ space.? ~/ Expression).map(Ast.Assignment.tupled)
+
+  // validation
+  val validation = P(outputReference ~ space.? ~ ":" ~  space.? ~/ function).map(Ast.Validation.tupled)
 
   // full programs
   val newline = P("\n" | "\r\n" | "\r" | "\f" | End)
   val program = P((assignment ~/ newline).rep).map(t => Ast.Program(t))
+  val validationProgram = P((validation ~/ newline).rep).map(t => Ast.VProgram(t))
 }
 

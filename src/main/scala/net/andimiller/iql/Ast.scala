@@ -49,6 +49,9 @@ object Ast {
   sealed trait Transform
   case class Assignment(lhs: OutputField, rhs: Pipeline) extends Transform
 
+  case class Validation(lhs: OutputField, rhs: String)
+
   // program
   case class Program(seq: Seq[Assignment])
+  case class VProgram(seq: Seq[Validation])
 }

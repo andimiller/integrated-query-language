@@ -129,6 +129,21 @@ object NewEvaluator {
       }
     }
 
+  val validationCompiler: Compiler[Ast.Validation] = (t: Ast.Validation) =>
+    ReaderT { s: State =>
+       IO {
+         val item = t.lhs.path.foldLeft(s.input.hcursor.asInstanceOf[ACursor]){ case (c, k) => c.downField(k) }.focus.getOrElse(Json.Null)
+         val result = t.rhs match {
+           case "required" => !item.isNull
+           case "int"      => item.isNumber
+           case "string"   => item.isString
+           case "boolean"  => item.isBoolean
+         }
+         val output = t.lhs.path.foldLeft(s.output.hcursor.asInstanceOf[ACursor]){_ path _}.withFocus(_ => Json.fromBoolean(result)).top.getOrElse(s.output)
+         (s.copy(output = output), Json.Null)
+      }
+    }
+
   val programCompiler: Compiler[Ast.Program] = (t: Ast.Program) =>
     ReaderT { s0: State =>
       t.seq.map(assignmentCompiler).foldLeft(IO.pure(s0)) { case (s, p) =>
@@ -136,4 +151,11 @@ object NewEvaluator {
       }.map((_, Json.Null))
     }
 
+  val vprogramCompiler: Compiler[Ast.VProgram] = (t: Ast.VProgram) =>
+    ReaderT { s0: State =>
+      t.seq.map(validationCompiler).foldLeft(IO.pure(s0)) { case (s, p) =>
+          s.flatMap(p.run).map(_._1)
+      }.map((_, Json.Null))
+
+    }
 }
