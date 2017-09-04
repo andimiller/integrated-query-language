@@ -115,7 +115,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.favouriteAnimal == "cat") && (.numberOfAnimals > 1) """
-    Parser.filter.parse(inputFilter) match {
+    Parser.toplevelExpression.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
@@ -137,7 +137,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     val inputFilter =
       """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1) """
-    Parser.filter.parse(inputFilter) match {
+    Parser.toplevelExpression.parse(inputFilter) match {
       case Success(exp, count) =>
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
