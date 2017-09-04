@@ -12,16 +12,16 @@ object NewAst extends App {
   // structural types
   sealed trait Pipeline[P]
   // reference types
-  sealed trait Reference[R] extends Pipeline[R]
-  case class Field[R](path: Seq[String]) extends Reference[R]
-  case class OutputField[R](path: Seq[String]) extends Reference[R]
+  sealed trait Reference[R]                                            extends Pipeline[R]
+  case class Field[R](path: Seq[String])                               extends Reference[R]
+  case class OutputField[R](path: Seq[String])                         extends Reference[R]
   case class SettableOutputField[R](parent: ObjectNode, field: String) extends Reference[R]
   // data types
-  sealed trait Data[D] extends Pipeline[D]
-  case class Text[D](value: String) extends Data[D]
-  case class Integer[D](value: Int) extends Data[D]
+  sealed trait Data[D]                    extends Pipeline[D]
+  case class Text[D](value: String)       extends Data[D]
+  case class Integer[D](value: Int)       extends Data[D]
   case class Float[D](value: scala.Float) extends Data[D]
-  case class Bool[D](value: Boolean) extends Data[D]
+  case class Bool[D](value: Boolean)      extends Data[D]
   // containers
   case class Array[D](values: Seq[Pipeline[D]]) extends Data[D]
   // types
@@ -37,13 +37,13 @@ object NewAst extends App {
     def getLhs = lhs
     def getRhs = rhs
   }
-  case class Equals[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
+  case class Equals[P](lhs: Pipeline[P], rhs: Pipeline[P])   extends InfixOperator[P](lhs, rhs)
   case class MoreThan[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
   case class LessThan[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
-  case class AND[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
-  case class OR[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
-  case class XOR[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
-  case class In[P](lhs: Pipeline[P], rhs: Pipeline[P]) extends InfixOperator[P](lhs, rhs)
+  case class AND[P](lhs: Pipeline[P], rhs: Pipeline[P])      extends InfixOperator[P](lhs, rhs)
+  case class OR[P](lhs: Pipeline[P], rhs: Pipeline[P])       extends InfixOperator[P](lhs, rhs)
+  case class XOR[P](lhs: Pipeline[P], rhs: Pipeline[P])      extends InfixOperator[P](lhs, rhs)
+  case class In[P](lhs: Pipeline[P], rhs: Pipeline[P])       extends InfixOperator[P](lhs, rhs)
 
   // transforms
   sealed trait Transform[T]
