@@ -12,14 +12,14 @@ object Ast {
   // structural types
   sealed trait Pipeline
   // reference types
-  sealed trait Reference extends Pipeline
-  case class Field(path: Seq[String]) extends Reference
-  case class OutputField(path: Seq[String]) extends Reference
+  sealed trait Reference                                            extends Pipeline
+  case class Field(path: Seq[String])                               extends Reference
+  case class OutputField(path: Seq[String])                         extends Reference
   case class SettableOutputField(parent: ObjectNode, field: String) extends Reference
   // data types
-  sealed trait Data extends Pipeline
-  case class Text(value: String) extends Data
-  case class Integer(value: Int) extends Data
+  sealed trait Data               extends Pipeline
+  case class Text(value: String)  extends Data
+  case class Integer(value: Int)  extends Data
   case class Float(value: Double) extends Data
   case class Bool(value: Boolean) extends Data
   // containers
@@ -37,13 +37,13 @@ object Ast {
     def getLhs = lhs
     def getRhs = rhs
   }
-  case class Equals(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class Equals(lhs: Pipeline, rhs: Pipeline)   extends InfixOperator(lhs, rhs)
   case class MoreThan(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
   case class LessThan(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
-  case class AND(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
-  case class OR(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
-  case class XOR(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
-  case class In(lhs: Pipeline, rhs: Pipeline) extends InfixOperator(lhs, rhs)
+  case class AND(lhs: Pipeline, rhs: Pipeline)      extends InfixOperator(lhs, rhs)
+  case class OR(lhs: Pipeline, rhs: Pipeline)       extends InfixOperator(lhs, rhs)
+  case class XOR(lhs: Pipeline, rhs: Pipeline)      extends InfixOperator(lhs, rhs)
+  case class In(lhs: Pipeline, rhs: Pipeline)       extends InfixOperator(lhs, rhs)
 
   // transforms
   sealed trait Transform

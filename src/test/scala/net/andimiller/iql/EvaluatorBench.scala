@@ -8,8 +8,8 @@ import org.scalameter._
   * Created by andi on 24/12/2015.
   */
 object EvaluatorBench extends App {
-  val OM = new ObjectMapper()
-  val world = new Ast.World(OM.readTree("{\"foo\":\"bar\"}"))
+  val OM     = new ObjectMapper()
+  val world  = new Ast.World(OM.readTree("{\"foo\":\"bar\"}"))
   val world2 = new Ast.World(OM.readTree("{\"foo\":\"baz\"}"))
 
   val benchConfig = config(

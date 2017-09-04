@@ -10,18 +10,18 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "Strings" should "only be valid if they have double quotes on both ends" in {
     val inputs = Map(
-      "\"hello world" -> false,
+      "\"hello world"   -> false,
       "\"hello world\"" -> true,
-      "boo" -> false,
-      "boo\"" -> false,
-      "\"BOO\"" -> true
+      "boo"             -> false,
+      "boo\""           -> false,
+      "\"BOO\""         -> true
     )
 
     inputs.foreach { i =>
       val (input, expected) = i
-      val result = Parser.string.parse(input)
+      val result            = Parser.string.parse(input)
       expected match {
-        case true => result.isInstanceOf[Success[_, _, _]] must equal(true)
+        case true  => result.isInstanceOf[Success[_, _, _]] must equal(true)
         case false => result.isInstanceOf[Failure[_, _]] must equal(true)
       }
     }
@@ -34,7 +34,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "Integers" should "parse correctly" in {
     val input = "42"
-    val r = Parser.number.parse(input)
+    val r     = Parser.number.parse(input)
     r must equal(Success(Ast.Integer(42), input.length))
   }
 
@@ -45,12 +45,12 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "References" should "cut off a weird special characters" in {
     val input = ".\"hello"
-    val r = Parser.reference.parse(input)
+    val r     = Parser.reference.parse(input)
     r must equal(Success(Ast.Field(Seq()), 1))
   }
 
   "References" should "cut off after it looks valid" in {
-    val input = ".foo .bar"
+    val input  = ".foo .bar"
     val marker = input.indexOf(" ")
     Parser.reference.parse(input) must equal(Success(Ast.Field(Seq(input.substring(0, marker).stripPrefix("."))), marker))
   }
@@ -72,7 +72,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "Arrays" should "happen as expressions" in {
     val input = "[1,2,3]"
-    Parser.Expression.parse(input) must equal(Success(Ast.Array(List(1,2,3).map(Ast.Integer)), input.length))
+    Parser.Expression.parse(input) must equal(Success(Ast.Array(List(1, 2, 3).map(Ast.Integer)), input.length))
   }
 
   "Booleans" should "happen" in {
@@ -82,7 +82,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "BiggerThan" should "parse correctly via Expression" in {
     val input = ".cats < 10"
-    val r = Parser.Expression.parse(input)
+    val r     = Parser.Expression.parse(input)
 
   }
 

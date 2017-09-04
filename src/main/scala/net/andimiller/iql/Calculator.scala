@@ -44,7 +44,7 @@ object Calculator extends App {
   import Parser.NamedFunction
 
   val Digits = NamedFunction('0' to '9' contains (_: Char), "Digits")
-  val digits = P( CharsWhile(Digits))
+  val digits = P(CharsWhile(Digits))
 
   val plus     = P("+")
   val minus    = P("-")
@@ -53,28 +53,29 @@ object Calculator extends App {
 
   val symbol = P(plus | minus | multiply | divide)
 
-  def integer[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P( P("-").?.! ~ digits.!).map{ x =>
+  def integer[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P(P("-").?.! ~ digits.!).map { x =>
     val (prefix, number) = x
-    Integer[T]((prefix+number).toInt).embed
+    Integer[T]((prefix + number).toInt).embed
   }
 
   def expression[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P(integer | operatorExpression)
 
-  def operatorExpression[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P("(" ~/ expression ~/ symbol.! ~/ expression ~/ ")").map{ e =>
-    val (left, symbol, right) = e
-    symbol match {
-      case "+" => Add[T](left, right).embed
-      case "-" => Minus[T](left, right).embed
-      case "*" => Multiply[T](left, right).embed
-      case "/" => Divide[T](left, right).embed
-    }
+  def operatorExpression[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P("(" ~/ expression ~/ symbol.! ~/ expression ~/ ")").map {
+    e =>
+      val (left, symbol, right) = e
+      symbol match {
+        case "+" => Add[T](left, right).embed
+        case "-" => Minus[T](left, right).embed
+        case "*" => Multiply[T](left, right).embed
+        case "/" => Divide[T](left, right).embed
+      }
   }
 
   def calculator[T](implicit T: Corecursive.Aux[T, Expr]): Parser[T] = P(operatorExpression ~ End)
 
   // and usage
 
-  val r =  calculator[Nu[Expr]].parse("((((-1+2)+4)+8)*2)").get.value.cata(eval)
+  val r = calculator[Nu[Expr]].parse("((((-1+2)+4)+8)*2)").get.value.cata(eval)
   println(r)
 
 }

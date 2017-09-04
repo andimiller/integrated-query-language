@@ -120,7 +120,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
+        val result2    = exp.eval(new Ast.World(OM.readTree(inputJson2)))
         result2 must equal(Ast.Bool(false))
       case _ => fail("unable to parse query")
     }
@@ -142,12 +142,11 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
         result must equal(Ast.Bool(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val result2 = exp.eval(new Ast.World(OM.readTree(inputJson2)))
+        val result2    = exp.eval(new Ast.World(OM.readTree(inputJson2)))
         result2 must equal(Ast.Bool(false))
       case _ => fail("unable to parse query")
     }
   }
-
 
   "Evaluating a containment that's true" should "return true" in {
     val json =
@@ -161,7 +160,6 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case _ => fail("unable to parse query")
     }
   }
-
 
   "Tree traversal with star to branch" should "grab all the items" in {
     val json =
@@ -199,7 +197,6 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
-
   "Tree traversal with star to branch on partial names" should "grab all the items in matching branches" in {
     val json =
       """{
@@ -224,13 +221,12 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Insert a static item into the output JSON" should "correctly place it in the output" in {
     Parser.assignment.parse(".output = 42") match {
       case Success(v, i) =>
-        val w = new Ast.World(OM.createObjectNode())
+        val w      = new Ast.World(OM.createObjectNode())
         val result = v.eval(w)
         result must equal(Ast.Integer(42))
         w.output.toString must equal("{\"output\":42}")
       case _ => fail("unable to parse query")
     }
   }
-
 
 }
