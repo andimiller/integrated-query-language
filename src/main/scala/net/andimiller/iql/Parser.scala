@@ -28,18 +28,16 @@ object Parser {
     P("[" ~/ Expression ~ ("," ~ space.? ~ Expression).rep.? ~ "]").map(t => t._2.map(_.+:(t._1)).getOrElse(Seq(t._1))).map(Ast.Array)
 
   // types
-  val strChars = P(CharsWhile(StringChars))
-  val string =
-    P(space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
-  val wildcard = P("*")
-  //val squarebrackets = P("[" | "]")
-  val referenceChars = P(letter | digits | wildcard) //| squarebrackets)
-  val reference =
-    P(("." ~ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map(t =>
-      t match {
-        case (head, tail) if (head == "") && tail.isEmpty => Ast.Field(Seq())
-        case (head, tail)                                 => Ast.Field(tail.+:(head))
-    })
+  val strChars       = P(CharsWhile(StringChars))
+  val string         = P(space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Ast.Text)
+  val wildcard       = P("*")
+  val squarebrackets = P("[" | "]")
+  val referenceChars = P(letter | digits | wildcard | squarebrackets)
+  val reference = P(("." ~ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map(t =>
+    t match {
+      case (head, tail) if (head == "") && tail.isEmpty => Ast.Field(Seq())
+      case (head, tail)                                 => Ast.Field(tail.+:(head))
+  })
   val outputReferenceChars = P(letter | digits)
   val outputReference =
     P(("." ~ outputReferenceChars.rep.!) ~/ ("." ~/ outputReferenceChars.rep.!).rep).map(t =>
@@ -78,10 +76,8 @@ object Parser {
 
   val function = P("required" | "int" | "bool" | "string").!
 
-  // transforms
+  // transforms and validation
   val assignment = P(outputReference ~ space.? ~ "=" ~/ space.? ~ toplevelExpression).map(Ast.Assignment.tupled)
-
-  // validation
   val validation = P(outputReference ~ space.? ~ ":" ~ space.? ~/ function).map(Ast.Validation.tupled)
 
   // full programs
