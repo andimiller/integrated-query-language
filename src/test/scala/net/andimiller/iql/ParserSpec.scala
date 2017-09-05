@@ -86,4 +86,36 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   }
 
+  "Plus" should "parse correctly via OperatorExpression" in {
+    val input = "2 + 2"
+    val r     = Parser.OperatorExpression.parse(input)
+    r must equal(Success(Ast.Plus(Ast.Integer(2), Ast.Integer(2)), input.length))
+  }
+
+  "Plus" should "parse correctly via Assignment" in {
+    val input = ".b = 2 + 2"
+    val r     = Parser.assignment.parse(input)
+    r must equal(Success(Ast.Assignment(Ast.OutputField(Seq("b")), Ast.Plus(Ast.Integer(2), Ast.Integer(2))), input.length))
+  }
+
+  "A two line program" should "parse correctly via program" in {
+    val input =
+      """.a = "a"
+        |.b = "b"""".stripMargin
+    val r = Parser.program.parse(input)
+    import Ast._
+    r must equal(
+      Success(Program(Seq(Assignment(OutputField(Seq("a")), Text("a")), Assignment(OutputField(Seq("b")), Text("b")))), input.length))
+  }
+
+  "A two line program with an operator expression" should "parse correctly via program" in {
+    val input =
+      """.a = "a"
+        |.b = 2 + 2""".stripMargin
+    val r = Parser.program.parse(input)
+    import Ast._
+    r must equal(
+      Success(Program(Seq(Assignment(OutputField(Seq("a")), Text("a")), Assignment(OutputField(Seq("b")), Plus(Integer(2), Integer(2))))),
+              input.length))
+  }
 }

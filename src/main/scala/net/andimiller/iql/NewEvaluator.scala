@@ -23,6 +23,9 @@ object NewEvaluator {
     object JNumber {
       def unapply(j: Json): Option[Double] = Option(j).flatMap(_.asNumber.map(_.toDouble))
     }
+    object JInteger {
+      def unapply(j: Json): Option[Int] = Option(j).flatMap(_.asNumber.flatMap(_.toInt))
+    }
     object JBoolean {
       def unapply(j: Json): Option[Boolean] = Option(j).flatMap(_.asBoolean)
     }
@@ -107,6 +110,10 @@ object NewEvaluator {
                 case xor: Ast.XOR =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l ^ r)
+                  }
+                case plus: Ast.Plus =>
+                  (lhs, rhs) match {
+                    case (JInteger(l), JInteger(r)) => Json.fromInt(l + r)
                   }
               }
               (s2, result)

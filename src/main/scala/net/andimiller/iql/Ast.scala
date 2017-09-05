@@ -44,6 +44,7 @@ object Ast {
   case class OR(lhs: Pipeline, rhs: Pipeline)       extends InfixOperator(lhs, rhs)
   case class XOR(lhs: Pipeline, rhs: Pipeline)      extends InfixOperator(lhs, rhs)
   case class In(lhs: Pipeline, rhs: Pipeline)       extends InfixOperator(lhs, rhs)
+  case class Plus(lhs: Pipeline, rhs: Pipeline)     extends InfixOperator(lhs, rhs)
 
   // transforms
   sealed trait Transform

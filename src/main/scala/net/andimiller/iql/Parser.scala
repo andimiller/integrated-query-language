@@ -60,7 +60,7 @@ object Parser {
   // code
   val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | array | bracketedExpression)
   val OperatorExpression =
-    P(Expression ~/ space.? ~/ ("==" | "<" | ">" | "&&" | "||" | "^" | "in").! ~/ space.? ~/ Expression).map {
+    P(Expression ~ space.? ~ ("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+").! ~/ space.? ~/ Expression).map {
       case (l, operator, r) =>
         operator match {
           case "==" => Ast.Equals(l, r)
@@ -70,21 +70,22 @@ object Parser {
           case "||" => Ast.OR(l, r)
           case "^"  => Ast.XOR(l, r)
           case "in" => Ast.In(l, r)
+          case "+"  => Ast.Plus(l, r)
         }
     }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
-  val toplevelExpression: Parser[Ast.Pipeline]       = P(OperatorExpression | Expression)
+  val toplevelExpression: Parser[Ast.Pipeline]       = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
 
   // transforms
-  val assignment = P(outputReference ~ space.? ~ "=" ~ space.? ~/ toplevelExpression).map(Ast.Assignment.tupled)
+  val assignment = P(outputReference ~ space.? ~ "=" ~/ space.? ~ toplevelExpression).map(Ast.Assignment.tupled)
 
   // validation
   val validation = P(outputReference ~ space.? ~ ":" ~ space.? ~/ function).map(Ast.Validation.tupled)
 
   // full programs
   val newline           = P("\n" | "\r\n" | "\r" | "\f" | End)
-  val program           = P((assignment ~/ newline).rep).map(t => Ast.Program(t))
+  val program           = P(assignment.rep).map(t => Ast.Program(t))
   val validationProgram = P((validation ~/ newline).rep).map(t => Ast.VProgram(t))
 }
