@@ -22,7 +22,9 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     Parser.program.parse(program) match {
       case Success(v, i) =>
-        val result = NewEvaluator.programCompiler(v).run(NewEvaluator.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
+        val result = Compiler
+          .programCompiler(v)
+          .run(Compiler.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
         result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":"b"}""")
       case f =>
         println(f)
@@ -43,7 +45,9 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     Parser.program.parse(program) match {
       case Success(v, i) =>
-        val result = NewEvaluator.programCompiler(v).run(NewEvaluator.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
+        val result = Compiler
+          .programCompiler(v)
+          .run(Compiler.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
         result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":4}""")
       case f =>
         println(f)

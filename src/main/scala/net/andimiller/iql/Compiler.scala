@@ -6,7 +6,7 @@ import cats.effect._
 import cats._
 import cats.implicits._
 
-object NewEvaluator {
+object Compiler {
 
   implicit class PathCreatingCursor(cursor: ACursor) {
     def path(s: String): ACursor = {
@@ -21,10 +21,12 @@ object NewEvaluator {
 
   object CirceMatchers {
     object JNumber {
-      def unapply(j: Json): Option[Double] = Option(j).flatMap(_.asNumber.map(_.toDouble))
+      def unapply(j: Json): Option[Double] =
+        Option(j).flatMap(_.asNumber.map(_.toDouble))
     }
     object JInteger {
-      def unapply(j: Json): Option[Int] = Option(j).flatMap(_.asNumber.flatMap(_.toInt))
+      def unapply(j: Json): Option[Int] =
+        Option(j).flatMap(_.asNumber.flatMap(_.toInt))
     }
     object JBoolean {
       def unapply(j: Json): Option[Boolean] = Option(j).flatMap(_.asBoolean)
@@ -45,7 +47,12 @@ object NewEvaluator {
       t match {
         case Ast.Field(f) =>
           IO {
-            (s, f.foldLeft(s.input.hcursor.asInstanceOf[ACursor]) { case (c, k) => c.downField(k) }.focus.getOrElse(Json.Null))
+            (s,
+             f.foldLeft(s.input.hcursor.asInstanceOf[ACursor]) {
+                 case (c, k) => c.downField(k)
+               }
+               .focus
+               .getOrElse(Json.Null))
           }
       }
   }
@@ -72,7 +79,9 @@ object NewEvaluator {
                         }
                     }
                 }
-                .map { case (finalstate, jsons) => (finalstate, Json.arr(jsons: _*)) }
+                .map {
+                  case (finalstate, jsons) => (finalstate, Json.arr(jsons: _*))
+                }
           }
         case e: Ast.InfixOperator   => infixCompiler(e).run(s)
         case pe: Ast.PrefixOperator => prefixCompiler(pe).run(s)
@@ -127,7 +136,8 @@ object NewEvaluator {
         case (s1, rhs) =>
           val result = t match {
             case n: Ast.Not =>
-              if (rhs.isBoolean) Json.fromBoolean(!rhs.asBoolean.get) else Json.Null
+              if (rhs.isBoolean) Json.fromBoolean(!rhs.asBoolean.get)
+              else Json.Null
           }
           (s1, result)
       }
@@ -151,7 +161,12 @@ object NewEvaluator {
   val validationCompiler: Compiler[Ast.Validation] = (t: Ast.Validation) =>
     ReaderT { s: State =>
       IO {
-        val item = t.lhs.path.foldLeft(s.input.hcursor.asInstanceOf[ACursor]) { case (c, k) => c.downField(k) }.focus.getOrElse(Json.Null)
+        val item = t.lhs.path
+          .foldLeft(s.input.hcursor.asInstanceOf[ACursor]) {
+            case (c, k) => c.downField(k)
+          }
+          .focus
+          .getOrElse(Json.Null)
         val result = t.rhs match {
           case "required" => !item.isNull
           case "int"      => item.isNumber

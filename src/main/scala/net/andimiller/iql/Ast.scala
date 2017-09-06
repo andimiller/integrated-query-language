@@ -1,21 +1,12 @@
 package net.andimiller.iql
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-
-/**
-  * Created by andi on 23/12/2015.
-  */
 object Ast {
-  val OM = new ObjectMapper()
-  case class World(globals: JsonNode, var output: JsonNode = OM.createObjectNode())
   // structural types
   sealed trait Pipeline
   // reference types
-  sealed trait Reference                                            extends Pipeline
-  case class Field(path: Seq[String])                               extends Reference
-  case class OutputField(path: Seq[String])                         extends Reference
-  case class SettableOutputField(parent: ObjectNode, field: String) extends Reference
+  sealed trait Reference                    extends Pipeline
+  case class Field(path: Seq[String])       extends Reference
+  case class OutputField(path: Seq[String]) extends Reference
   // data types
   sealed trait Data               extends Pipeline
   case class Text(value: String)  extends Data

@@ -1,50 +1,52 @@
 package net.andimiller.iql
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fastparse.core.Parsed.Success
 import org.scalatest.{FlatSpec, MustMatchers}
+import io.circe._, io.circe.parser._
+import Compiler._
 
-/**
-  * Created by andi on 23/12/2015.
-  */
 class EvaluatorSpec extends FlatSpec with MustMatchers {
 
-  import Evaluator._
-
-  val OM = new ObjectMapper()
-
   "Evaluating a reference" should "fetch the value from the global variable map" in {
-    val world = new Ast.World(OM.readTree("{\"foo\": \"fooval\"}"))
+    val input =
+      Compiler.State(Json.obj("foo" -> Json.fromString("fooval")), Json.obj())
     Parser.reference.parse(".foo") match {
       case Success(v, i) =>
-        v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.Text("fooval"))
+        val (_, output) = referenceCompiler(v).run(input).unsafeRunSync()
+        output must equal(Json.fromString("fooval"))
       case _ => fail("unable to parse query")
     }
   }
 
   "Evaluating a non-existent reference" should "fail gracefully" in {
-    val world = new Ast.World(OM.readTree("{\"foo\": \"fooval\"}"))
+    val input =
+      Compiler.State(Json.obj("foo" -> Json.fromString("fooval")), Json.obj())
     Parser.reference.parse(".bar") match {
       case Success(v, i) =>
-        v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.None)
+        val (_, output) = referenceCompiler(v).run(input).unsafeRunSync()
+        output must equal(Json.Null)
       case _ => fail("unable to parse query")
     }
   }
 
   "Evaluating a non-existent chained reference" should "fail gracefully" in {
-    val world = new Ast.World(OM.readTree("{\"foo\": \"fooval\"}"))
+    val input =
+      Compiler.State(Json.obj("foo" -> Json.fromString("fooval")), Json.obj())
     Parser.reference.parse(".bar.baz.foo") match {
       case Success(v, i) =>
-        v.asInstanceOf[Ast.Reference].eval(world) must equal(Ast.None)
+        val (_, output) = referenceCompiler(v).run(input).unsafeRunSync()
+        output must equal(Json.Null)
       case _ => fail("unable to parse query")
     }
   }
 
   "Evaluating a non-existent chained reference in an equality check" should "fail gracefully" in {
-    val world = new Ast.World(OM.readTree("{\"foo\": \"fooval\"}"))
+    val input =
+      Compiler.State(Json.obj("foo" -> Json.fromString("fooval")), Json.obj())
     Parser.OperatorExpression.parse(".bar.baz.foo == \"moo\"") match {
       case Success(v, i) =>
-        v.eval(world) must equal(Ast.Bool(false))
+        val (_, output) = pipelineCompiler(v).run(input).unsafeRunSync()
+        output must equal(Json.fromBoolean(false))
       case _ => fail("unable to parse query")
     }
   }
@@ -52,7 +54,9 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Evaluating an equality that's not true" should "return false" in {
     Parser.OperatorExpression.parse("\"foo\"==\"nope\"") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
+        val (_, output) =
+          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromBoolean(false))
       case _ => fail("unable to parse query")
     }
   }
@@ -60,7 +64,9 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Evaluating an equality that's true" should "return true" in {
     Parser.OperatorExpression.parse("\"foo\"==\"foo\"") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+        val (_, output) =
+          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
   }
@@ -68,7 +74,9 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Evaluating an equality that's NOT true" should "return true" in {
     Parser.Expression.parse("!(\"foo\"==\"foo\")") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(false))
+        val (_, output) =
+          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromBoolean(false))
       case other => fail("unable to parse query")
     }
   }
@@ -76,7 +84,9 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Evaluating a lessthan that's true" should "return true" in {
     Parser.OperatorExpression.parse("4<42") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+        val (_, output) =
+          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
   }
@@ -84,7 +94,9 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   "Evaluating a multi-level OR that's true" should "return true" in {
     Parser.OperatorExpression.parse("(1==1)||(2==2)") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.createObjectNode())) must equal(Ast.Bool(true))
+        val (_, output) =
+          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
   }
@@ -100,8 +112,10 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """(.favouriteAnimal == "cat") && (.numberOfAnimals == 3) """
     Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
-        val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
-        result must equal(Ast.Bool(true))
+        val (_, output) = pipelineCompiler(exp)
+          .run(State(parse(inputJson).right.get, Json.obj()))
+          .unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
   }
@@ -114,14 +128,19 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         |}
       """.stripMargin
     val inputFilter =
-      """(.favouriteAnimal == "cat") && (.numberOfAnimals > 1) """
-    Parser.toplevelExpression.parse(inputFilter) match {
+      """(.favouriteAnimal == "cat") && (.numberOfAnimals > 1)\n"""
+    Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
-        val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
-        result must equal(Ast.Bool(true))
+        println(exp)
+        val (_, output) = pipelineCompiler(exp)
+          .run(State(parse(inputJson).right.get, Json.obj()))
+          .unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val result2    = exp.eval(new Ast.World(OM.readTree(inputJson2)))
-        result2 must equal(Ast.Bool(false))
+        val (_, output2) = pipelineCompiler(exp)
+          .run(State(parse(inputJson2).right.get, Json.obj()))
+          .unsafeRunSync()
+        output2 must equal(Json.fromBoolean(false))
       case _ => fail("unable to parse query")
     }
   }
@@ -136,15 +155,20 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         |}
       """.stripMargin
     val inputFilter =
-      """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1) """
-    Parser.toplevelExpression.parse(inputFilter) match {
+      """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1)\n"""
+    Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
-        val result = exp.eval(new Ast.World(OM.readTree(inputJson)))
-        result must equal(Ast.Bool(true))
+        val (_, output) = pipelineCompiler(exp)
+          .run(State(parse(inputJson).right.get, Json.obj()))
+          .unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val result2    = exp.eval(new Ast.World(OM.readTree(inputJson2)))
-        result2 must equal(Ast.Bool(false))
-      case _ => fail("unable to parse query")
+        val (_, output2) = pipelineCompiler(exp)
+          .run(State(parse(inputJson2).right.get, Json.obj()))
+          .unsafeRunSync()
+        output2 must equal(Json.fromBoolean(false))
+      case e =>
+        fail("unable to parse query")
     }
   }
 
@@ -156,11 +180,15 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     Parser.OperatorExpression.parse("5 in .data") match {
       case Success(v, i) =>
-        v.eval(new Ast.World(OM.readTree(json))) must equal(Ast.Bool(true))
+        val (_, output) = pipelineCompiler(v)
+          .run(State(parse(json).right.get, Json.obj()))
+          .unsafeRunSync()
+        output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
   }
 
+  /**
   "Tree traversal with star to branch" should "grab all the items" in {
     val json =
       """{
@@ -177,8 +205,8 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
         v.eval(new Ast.World(OM.readTree(json))) must equal(Ast.Array(List(Ast.Integer(4), Ast.Integer(8))))
       case _ => fail("unable to parse query")
     }
-  }
-
+  }**/
+  /**
   "Tree traversal with numbered array items" should "grab all the correct" in {
     val json =
       """{
@@ -217,14 +245,14 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       case _ => fail("unable to parse query")
     }
   }
-
+    **/
   "Insert a static item into the output JSON" should "correctly place it in the output" in {
     Parser.assignment.parse(".output = 42") match {
       case Success(v, i) =>
-        val w      = new Ast.World(OM.createObjectNode())
-        val result = v.eval(w)
-        result must equal(Ast.Integer(42))
-        w.output.toString must equal("{\"output\":42}")
+        val (State(_, output), result) = assignmentCompiler(v)
+          .run(State(Json.obj(), Json.obj()))
+          .unsafeRunSync()
+        output.noSpaces must equal("{\"output\":42}")
       case _ => fail("unable to parse query")
     }
   }
