@@ -9,6 +9,16 @@ import org.scalacheck.Prop._
 import org.scalatest._
 
 class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
+  implicit val fields: Arbitrary[Ast.Field] = Arbitrary {
+    for {
+      path <- Arbitrary.arbitrary[List[String]] suchThat {xs => !xs.contains("") && xs.filter(_.contains(".")).size == 0}
+     } yield (Ast.Field(path))
+  }
+  implicit val ofields: Arbitrary[Ast.OutputField] = Arbitrary {
+    for {
+      path <- Arbitrary.arbitrary[List[String]] suchThat {xs => !xs.contains("") && xs.filter(_.contains(".")).size == 0}
+    } yield (Ast.OutputField(path))
+  }
   "Plus" should "be completely defined" in {
     var c = 0L
     import Compiler._

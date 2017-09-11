@@ -5,12 +5,8 @@ object Ast {
   sealed trait Expression
   // reference types
   sealed trait Reference                    extends Expression
-  case class Field(path: List[String])       extends Reference {
-    def apply(path: List[String]): Field = new Field(path.filter(_!=""))
-  }
-  case class OutputField(path: List[String]) {
-    def apply(path: List[String]): OutputField = new OutputField(path.filter(_!=""))
-  }
+  case class Field(path: List[String])       extends Reference
+  case class OutputField(path: List[String])
   // data types
   sealed trait Data               extends Expression
   case class Text(value: String)  extends Data
