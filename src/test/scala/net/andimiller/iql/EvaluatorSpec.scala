@@ -45,7 +45,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       Compiler.State(Json.obj("foo" -> Json.fromString("fooval")), Json.obj())
     Parser.OperatorExpression.parse(".bar.baz.foo == \"moo\"") match {
       case Success(v, i) =>
-        val (_, output) = pipelineCompiler(v).run(input).unsafeRunSync()
+        val (_, output) = expressionCompiler(v).run(input).unsafeRunSync()
         output must equal(Json.fromBoolean(false))
       case _ => fail("unable to parse query")
     }
@@ -55,7 +55,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("\"foo\"==\"nope\"") match {
       case Success(v, i) =>
         val (_, output) =
-          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+          expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
         output must equal(Json.fromBoolean(false))
       case _ => fail("unable to parse query")
     }
@@ -65,7 +65,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("\"foo\"==\"foo\"") match {
       case Success(v, i) =>
         val (_, output) =
-          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+          expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
         output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
@@ -75,7 +75,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.Expression.parse("!(\"foo\"==\"foo\")") match {
       case Success(v, i) =>
         val (_, output) =
-          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+          expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
         output must equal(Json.fromBoolean(false))
       case other => fail("unable to parse query")
     }
@@ -85,7 +85,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("4<42") match {
       case Success(v, i) =>
         val (_, output) =
-          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+          expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
         output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
@@ -95,7 +95,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse("(1==1)||(2==2)") match {
       case Success(v, i) =>
         val (_, output) =
-          pipelineCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+          expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
         output must equal(Json.fromBoolean(true))
       case _ => fail("unable to parse query")
     }
@@ -112,7 +112,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """(.favouriteAnimal == "cat") && (.numberOfAnimals == 3) """
     Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
-        val (_, output) = pipelineCompiler(exp)
+        val (_, output) = expressionCompiler(exp)
           .run(State(parse(inputJson).right.get, Json.obj()))
           .unsafeRunSync()
         output must equal(Json.fromBoolean(true))
@@ -132,12 +132,12 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
         println(exp)
-        val (_, output) = pipelineCompiler(exp)
+        val (_, output) = expressionCompiler(exp)
           .run(State(parse(inputJson).right.get, Json.obj()))
           .unsafeRunSync()
         output must equal(Json.fromBoolean(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val (_, output2) = pipelineCompiler(exp)
+        val (_, output2) = expressionCompiler(exp)
           .run(State(parse(inputJson2).right.get, Json.obj()))
           .unsafeRunSync()
         output2 must equal(Json.fromBoolean(false))
@@ -158,12 +158,12 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """(.data.favouriteAnimal == "cat") && (.data.numberOfAnimals > 1)\n"""
     Parser.OperatorExpression.parse(inputFilter) match {
       case Success(exp, count) =>
-        val (_, output) = pipelineCompiler(exp)
+        val (_, output) = expressionCompiler(exp)
           .run(State(parse(inputJson).right.get, Json.obj()))
           .unsafeRunSync()
         output must equal(Json.fromBoolean(true))
         val inputJson2 = inputJson.replace("3", "0")
-        val (_, output2) = pipelineCompiler(exp)
+        val (_, output2) = expressionCompiler(exp)
           .run(State(parse(inputJson2).right.get, Json.obj()))
           .unsafeRunSync()
         output2 must equal(Json.fromBoolean(false))
@@ -180,7 +180,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
       """.stripMargin
     Parser.OperatorExpression.parse("5 in .data") match {
       case Success(v, i) =>
-        val (_, output) = pipelineCompiler(v)
+        val (_, output) = expressionCompiler(v)
           .run(State(parse(json).right.get, Json.obj()))
           .unsafeRunSync()
         output must equal(Json.fromBoolean(true))

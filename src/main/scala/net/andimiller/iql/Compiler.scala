@@ -34,13 +34,23 @@ object Compiler {
     object JArray {
       def unapply(j: Json): Option[Vector[Json]] = Option(j).flatMap(_.asArray)
     }
+    object JFloat {
+      def unapply(j: Json): Option[Double] =
+        Option(j).flatMap(_.asNumber).map(_.toDouble)
+    }
+    object JString {
+      def unapply(j: Json): Option[String] = Option(j).flatMap(_.asString)
+    }
   }
   import CirceMatchers._
 
   case class State(input: Json, output: Json)
+  object State {
+    val empty = State(Json.obj(), Json.obj())
+  }
 
   type RunnableStep = ReaderT[IO, State, (State, Json)]
-  type Compiler[T]  = T => RunnableStep
+  type Compiler[T] = T => RunnableStep
 
   val referenceCompiler: Compiler[Ast.Reference] = (t: Ast.Reference) =>
     ReaderT { s: State =>
@@ -57,7 +67,7 @@ object Compiler {
       }
   }
 
-  val pipelineCompiler: Compiler[Ast.Pipeline] = (t: Ast.Pipeline) =>
+  val expressionCompiler: Compiler[Ast.Expression] = (t: Ast.Expression) =>
     ReaderT { s: State =>
       t match {
         case r: Ast.Reference => referenceCompiler(r).run(s)
@@ -69,7 +79,7 @@ object Compiler {
             case b: Ast.Bool    => IO { (s, Json.fromBoolean(b.value)) }
             case a: Ast.Array =>
               a.values
-                .map(pipelineCompiler)
+                .map(expressionCompiler)
                 .foldLeft(IO.pure(s, List.empty[Json])) {
                   case (i, r) =>
                     i.flatMap {
@@ -90,39 +100,53 @@ object Compiler {
 
   val infixCompiler: Compiler[Ast.InfixOperator] = (t: Ast.InfixOperator) =>
     ReaderT { s: State =>
-      pipelineCompiler(t.getLhs).run(s).flatMap {
+      expressionCompiler(t.getLhs).run(s).flatMap {
         case (s1, lhs) =>
-          pipelineCompiler(t.getRhs).run(s).map {
+          expressionCompiler(t.getRhs).run(s).map {
             case (s2, rhs) =>
               val result = t match {
                 case equals: Ast.Equals => Json.fromBoolean(lhs == rhs)
                 case lessthan: Ast.LessThan =>
                   (lhs, rhs) match {
                     case (JNumber(l), JNumber(r)) => Json.fromBoolean(l < r)
+                    case _                        => Json.Null
                   }
                 case morethan: Ast.MoreThan =>
                   (lhs, rhs) match {
                     case (JNumber(l), JNumber(r)) => Json.fromBoolean(l > r)
+                    case _                        => Json.Null
                   }
                 case or: Ast.OR =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l || r)
+                    case _                          => Json.Null
                   }
                 case and: Ast.AND =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l && r)
+                    case _                          => Json.Null
                   }
                 case in: Ast.In =>
                   (lhs, rhs) match {
                     case (l, JArray(r)) => Json.fromBoolean(r.contains(l))
+                    case _              => Json.Null
                   }
                 case xor: Ast.XOR =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l ^ r)
+                    case _                          => Json.Null
                   }
                 case plus: Ast.Plus =>
                   (lhs, rhs) match {
                     case (JInteger(l), JInteger(r)) => Json.fromInt(l + r)
+                    case (JFloat(l), JInteger(r)) =>
+                      Json.fromDouble(l + r).getOrElse(Json.Null)
+                    case (JInteger(l), JFloat(r)) =>
+                      Json.fromDouble(l + r).getOrElse(Json.Null)
+                    case (JFloat(l), JFloat(r)) =>
+                      Json.fromDouble(l + r).getOrElse(Json.Null)
+                    case (JString(l), JString(r)) => Json.fromString(l + r)
+                    case _                        => Json.Null
                   }
               }
               (s2, result)
@@ -132,7 +156,7 @@ object Compiler {
 
   val prefixCompiler: Compiler[Ast.PrefixOperator] = (t: Ast.PrefixOperator) =>
     ReaderT { s: State =>
-      pipelineCompiler(t.getRhs).run(s).map {
+      expressionCompiler(t.getRhs).run(s).map {
         case (s1, rhs) =>
           val result = t match {
             case n: Ast.Not =>
@@ -145,7 +169,7 @@ object Compiler {
 
   val assignmentCompiler: Compiler[Ast.Assignment] = (t: Ast.Assignment) =>
     ReaderT { s: State =>
-      pipelineCompiler(t.rhs).run(s).map {
+      expressionCompiler(t.rhs).run(s).map {
         case (s1, rhs) =>
           val output = t.lhs.path
             .foldLeft(s1.output.hcursor.asInstanceOf[ACursor]) { _ path _ }

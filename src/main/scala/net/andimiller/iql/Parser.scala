@@ -1,5 +1,11 @@
 package net.andimiller.iql
 
+import scala.util.Try
+
+import cats.syntax._
+import cats.implicits._
+import cats._
+
 object Parser {
   import fastparse.all._
 
@@ -25,9 +31,9 @@ object Parser {
 
   // data structures
   val array =
-    P("[" ~/ Expression ~ ("," ~ space.? ~ Expression).rep.? ~ "]")
-      .map(t => t._2.map(_.+:(t._1)).getOrElse(Seq(t._1)))
-      .map(Ast.Array)
+    P("[" ~/ Expression.? ~ ("," ~ space.? ~ Expression).rep.? ~ "]")
+        .map{ case (a, b) => a.toList ++ b.toList.flatten }
+        .map(Ast.Array)
 
   // types
   val strChars       = P(CharsWhile(StringChars))
@@ -35,22 +41,14 @@ object Parser {
   val wildcard       = P("*")
   val squarebrackets = P("[" | "]")
   val referenceChars = P(letter | digits | wildcard | squarebrackets)
-  val reference = P(("." ~ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map(t =>
-    t match {
-      case (head, tail) if (head == "") && tail.isEmpty => Ast.Field(Seq())
-      case (head, tail)                                 => Ast.Field(tail.+:(head))
-  })
+  val reference = P(&(".") ~/ ("." ~/ referenceChars.rep.!).rep).map(t => Ast.Field.apply(t.toList))
   val outputReferenceChars = P(letter | digits)
   val outputReference =
-    P(("." ~ outputReferenceChars.rep.!) ~/ ("." ~/ outputReferenceChars.rep.!).rep)
-      .map(t =>
-        t match {
-          case (head, tail) if (head == "") && tail.isEmpty =>
-            Ast.OutputField(Seq())
-          case (head, tail) => Ast.OutputField(tail.+:(head))
-      })
+    P(&(".") ~/ ("." ~/ outputReferenceChars.rep.!).rep).map(t => Ast.OutputField.apply(t.toList))
   val number =
-    P(digits ~ digits.rep).!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
+    P("-".? ~ digits ~ digits.rep ~ !".").!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
+  val float =
+    P("-".? ~ P(digits ~ digits.rep) ~ "." ~ P(digits ~ digits.rep) ~ P("E" ~ "-".? ~ digits ~ digits.rep).?).!.map{s => Ast.Float(Try {s.toDouble}.getOrElse(0.0d))}
   val boolean = P("true" | "false").!.map(_ match {
     case "true"  => Ast.Bool(true)
     case "false" => Ast.Bool(false)
@@ -60,7 +58,7 @@ object Parser {
   val Notted = P("!" ~ space.? ~/ Expression).map(Ast.Not)
 
   // code
-  val Expression: Parser[Ast.Pipeline] = P(Notted | number | string | reference | boolean | array | bracketedExpression)
+  val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | bracketedExpression)
   val OperatorExpression =
     P(Expression ~ space.? ~ ("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+").! ~/ space.? ~/ Expression)
       .map {
@@ -77,7 +75,7 @@ object Parser {
           }
       }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
-  val toplevelExpression: Parser[Ast.Pipeline]       = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
+  val toplevelExpression: Parser[Ast.Expression]       = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
 
@@ -90,7 +88,7 @@ object Parser {
 
   // full programs
   val newline = P("\n" | "\r\n" | "\r" | "\f" | End)
-  val program = P(assignment.rep).map(t => Ast.Program(t))
+  val program = P(assignment.rep).map(t => Ast.Program(t.toList))
   val validationProgram =
-    P((validation ~/ newline).rep).map(t => Ast.VProgram(t))
+    P((validation ~/ newline).rep).map(t => Ast.VProgram(t.toList))
 }

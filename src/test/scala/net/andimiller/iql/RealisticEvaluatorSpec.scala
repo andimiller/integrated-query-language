@@ -24,7 +24,7 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
       case Success(v, i) =>
         val result = Compiler
           .programCompiler(v)
-          .run(Compiler.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
+          .run(Compiler.State(parse(inputjson).right.toOption.getOrElse(Json.obj()), Json.obj()))
         result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":"b"}""")
       case f =>
         println(f)
@@ -47,7 +47,7 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
       case Success(v, i) =>
         val result = Compiler
           .programCompiler(v)
-          .run(Compiler.State(parse(inputjson).getOrElse(Json.obj()), Json.obj()))
+          .run(Compiler.State(parse(inputjson).right.toOption.getOrElse(Json.obj()), Json.obj()))
         result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":4}""")
       case f =>
         println(f)

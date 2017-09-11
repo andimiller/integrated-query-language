@@ -40,34 +40,34 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "References" should "be valid if they don't use special characters" in {
     val input = ".reference"
-    Parser.reference.parse(input) must equal(Success(Ast.Field(Seq("reference")), input.length))
+    Parser.reference.parse(input) must equal(Success(Ast.Field(List("reference")), input.length))
   }
 
   "References" should "cut off a weird special characters" in {
     val input = ".\"hello"
     val r     = Parser.reference.parse(input)
-    r must equal(Success(Ast.Field(Seq()), 1))
+    r must equal(Success(Ast.Field(List("")), 1))
   }
 
   "References" should "cut off after it looks valid" in {
     val input  = ".foo .bar"
     val marker = input.indexOf(" ")
-    Parser.reference.parse(input) must equal(Success(Ast.Field(Seq(input.substring(0, marker).stripPrefix("."))), marker))
+    Parser.reference.parse(input) must equal(Success(Ast.Field(List(input.substring(0, marker).stripPrefix("."))), marker))
   }
 
   "Equality statements" should "be valid with two references" in {
     val input = ".foo==.bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(List("foo")), Ast.Field(List("bar"))), input.length))
   }
 
   "Equality statements" should "be valid with two references and whitespace" in {
     val input = ".foo == .bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(Seq("foo")), Ast.Field(Seq("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(List("foo")), Ast.Field(List("bar"))), input.length))
   }
 
   "Arrays" should "happen" in {
     val input = "[1,2,3]"
-    Parser.array.parse(input) must equal(Success(Ast.Array(Seq(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3))), input.length))
+    Parser.array.parse(input) must equal(Success(Ast.Array(List(Ast.Integer(1), Ast.Integer(2), Ast.Integer(3))), input.length))
   }
 
   "Arrays" should "happen as expressions" in {
@@ -95,7 +95,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
   "Plus" should "parse correctly via Assignment" in {
     val input = ".b = 2 + 2"
     val r     = Parser.assignment.parse(input)
-    r must equal(Success(Ast.Assignment(Ast.OutputField(Seq("b")), Ast.Plus(Ast.Integer(2), Ast.Integer(2))), input.length))
+    r must equal(Success(Ast.Assignment(Ast.OutputField(List("b")), Ast.Plus(Ast.Integer(2), Ast.Integer(2))), input.length))
   }
 
   "A two line program" should "parse correctly via program" in {
@@ -105,7 +105,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
     val r = Parser.program.parse(input)
     import Ast._
     r must equal(
-      Success(Program(Seq(Assignment(OutputField(Seq("a")), Text("a")), Assignment(OutputField(Seq("b")), Text("b")))), input.length))
+      Success(Program(List(Assignment(OutputField(List("a")), Text("a")), Assignment(OutputField(List("b")), Text("b")))), input.length))
   }
 
   "A two line program with an operator expression" should "parse correctly via program" in {
@@ -115,7 +115,13 @@ class ParserSpec extends FlatSpec with MustMatchers {
     val r = Parser.program.parse(input)
     import Ast._
     r must equal(
-      Success(Program(Seq(Assignment(OutputField(Seq("a")), Text("a")), Assignment(OutputField(Seq("b")), Plus(Integer(2), Integer(2))))),
+      Success(Program(List(Assignment(OutputField(List("a")), Text("a")), Assignment(OutputField(List("b")), Plus(Integer(2), Integer(2))))),
               input.length))
+  }
+
+  "Float" should "parse 0.0" in {
+    val input = "0.0"
+    val r = Parser.float.parse(input)
+    r must equal(Success(Ast.Float(0.0d), input.size))
   }
 }

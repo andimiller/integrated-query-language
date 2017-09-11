@@ -4,7 +4,7 @@ organization := "net.andimiller"
 
 isSnapshot := true
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.11.11"
 
 scalacOptions += "-Ypartial-unification"
 
@@ -25,6 +25,8 @@ resolvers += "Sonatype OSS Snapshots" at
 
 libraryDependencies += "com.storm-enroute" %% "scalameter-core" % "0.8.2" % "test"
 libraryDependencies += "org.scalatest"     %% "scalatest"       % "3.0.3" % "test"
+libraryDependencies += "com.github.alexarchambault" %% "scalacheck-shapeless_1.13" % "1.1.7" // % "test"
+libraryDependencies += "ai.x" %% "diff" % "1.2.0"
 
 bintrayReleaseOnPublish in ThisBuild := true
 
