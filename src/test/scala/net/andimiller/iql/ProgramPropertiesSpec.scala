@@ -2,13 +2,15 @@ package net.andimiller.iql
 
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.{FlatSpec, MustMatchers}
-import org.scalacheck.ScalacheckShapeless._
+//import org.scalacheck.ScalacheckShapeless._
 import org.scalatest.prop.Checkers
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Prop._
 import org.scalatest._
+import Generators._
 
-class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
+object ProgramPropertiesSpec {
+  /*
   implicit val fields: Arbitrary[Ast.Field] = Arbitrary {
     for {
       path <- Arbitrary.arbitrary[List[String]] suchThat {xs => !xs.contains("") && xs.filter(_.contains(".")).size == 0}
@@ -19,6 +21,10 @@ class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
       path <- Arbitrary.arbitrary[List[String]] suchThat {xs => !xs.contains("") && xs.filter(_.contains(".")).size == 0}
     } yield (Ast.OutputField(path))
   }
+  */
+}
+
+class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
   "Plus" should "be completely defined" in {
     var c = 0L
     import Compiler._

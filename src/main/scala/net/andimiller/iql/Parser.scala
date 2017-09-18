@@ -5,6 +5,7 @@ import scala.util.Try
 import cats.syntax._
 import cats.implicits._
 import cats._
+import cats.data._
 
 object Parser {
   import fastparse.all._
@@ -41,7 +42,7 @@ object Parser {
   val wildcard       = P("*")
   val squarebrackets = P("[" | "]")
   val referenceChars = P(letter | digits | wildcard | squarebrackets)
-  val reference = P(&(".") ~/ ("." ~/ referenceChars.rep.!).rep).map(t => Ast.Field.apply(t.toList))
+  val reference = P(&(".") ~/ ("." ~/ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map{case (h, t) => Ast.Field.apply(NonEmptyList(h, t.toList))}
   val outputReferenceChars = P(letter | digits)
   val outputReference =
     P(&(".") ~/ ("." ~/ outputReferenceChars.rep.!).rep).map(t => Ast.OutputField.apply(t.toList))

@@ -9,7 +9,7 @@ object Unparser {
   val referenceUnparser: Unparser[Ast.Reference] = (t: Ast.Reference) => {
     t match {
       case Ast.Field(path) =>
-        "."+path.mkString(".")
+        "."+path.toList.mkString(".")
     }
   }
 

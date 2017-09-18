@@ -2,6 +2,10 @@ package net.andimiller.iql
 
 import fastparse.core.Parsed.{Failure, Success}
 import org.scalatest.{FlatSpec, MustMatchers}
+import cats._
+import cats.data.NonEmptyList
+import cats.implicits._
+import cats.syntax._
 
 /**
   * Created by andi on 23/12/2015.
@@ -40,29 +44,29 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "References" should "be valid if they don't use special characters" in {
     val input = ".reference"
-    Parser.reference.parse(input) must equal(Success(Ast.Field(List("reference")), input.length))
+    Parser.reference.parse(input) must equal(Success(Ast.Field(NonEmptyList.of("reference")), input.length))
   }
 
   "References" should "cut off a weird special characters" in {
     val input = ".\"hello"
     val r     = Parser.reference.parse(input)
-    r must equal(Success(Ast.Field(List("")), 1))
+    r must equal(Success(Ast.Field(NonEmptyList.of("")), 1))
   }
 
   "References" should "cut off after it looks valid" in {
     val input  = ".foo .bar"
     val marker = input.indexOf(" ")
-    Parser.reference.parse(input) must equal(Success(Ast.Field(List(input.substring(0, marker).stripPrefix("."))), marker))
+    Parser.reference.parse(input) must equal(Success(Ast.Field(NonEmptyList.of(input.substring(0, marker).stripPrefix("."))), marker))
   }
 
   "Equality statements" should "be valid with two references" in {
     val input = ".foo==.bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(List("foo")), Ast.Field(List("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
   }
 
   "Equality statements" should "be valid with two references and whitespace" in {
     val input = ".foo == .bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(List("foo")), Ast.Field(List("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
   }
 
   "Arrays" should "happen" in {
