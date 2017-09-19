@@ -33,8 +33,8 @@ object Parser {
   // data structures
   val array =
     P("[" ~/ Expression.? ~ ("," ~ space.? ~ Expression).rep.? ~ "]")
-        .map{ case (a, b) => a.toList ++ b.toList.flatten }
-        .map(Ast.Array)
+      .map { case (a, b) => a.toList ++ b.toList.flatten }
+      .map(Ast.Array)
 
   // types
   val strChars       = P(CharsWhile(StringChars))
@@ -42,14 +42,18 @@ object Parser {
   val wildcard       = P("*")
   val squarebrackets = P("[" | "]")
   val referenceChars = P(letter | digits | wildcard | squarebrackets)
-  val reference = P(&(".") ~/ ("." ~/ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map{case (h, t) => Ast.Field.apply(NonEmptyList(h, t.toList))}
+  val reference = P(&(".") ~/ ("." ~/ referenceChars.rep.!) ~/ ("." ~/ referenceChars.rep.!).rep).map {
+    case (h, t) => Ast.Field.apply(NonEmptyList(h, t.toList))
+  }
   val outputReferenceChars = P(letter | digits)
   val outputReference =
     P(&(".") ~/ ("." ~/ outputReferenceChars.rep.!).rep).map(t => Ast.OutputField.apply(t.toList))
   val number =
     P("-".? ~ digits ~ digits.rep ~ !".").!.map(s => Ast.Integer(Integer.parseInt(s.toString)))
   val float =
-    P("-".? ~ P(digits ~ digits.rep) ~ "." ~ P(digits ~ digits.rep) ~ P("E" ~ "-".? ~ digits ~ digits.rep).?).!.map{s => Ast.Float(Try {s.toDouble}.getOrElse(0.0d))}
+    P("-".? ~ P(digits ~ digits.rep) ~ "." ~ P(digits ~ digits.rep) ~ P("E" ~ "-".? ~ digits ~ digits.rep).?).!.map { s =>
+      Ast.Float(Try { s.toDouble }.getOrElse(0.0d))
+    }
   val boolean = P("true" | "false").!.map(_ match {
     case "true"  => Ast.Bool(true)
     case "false" => Ast.Bool(false)
@@ -76,7 +80,7 @@ object Parser {
           }
       }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
-  val toplevelExpression: Parser[Ast.Expression]       = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
+  val toplevelExpression: Parser[Ast.Expression]     = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
 

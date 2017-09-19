@@ -9,37 +9,37 @@ object Unparser {
   val referenceUnparser: Unparser[Ast.Reference] = (t: Ast.Reference) => {
     t match {
       case Ast.Field(path) =>
-        "."+path.toList.mkString(".")
+        "." + path.toList.mkString(".")
     }
   }
 
   val expressionUnparser: Unparser[Ast.Expression] = (t: Ast.Expression) =>
-      t match {
-        case r: Ast.Reference => referenceUnparser(r)
-        case d: Ast.Data =>
-          d match {
-            case t: Ast.Text    => "\"" + t.value + "\""
-            case i: Ast.Integer => i.value.toString
-            case f: Ast.Float   => f.value.toString
-            case b: Ast.Bool    => b.value.toString
-            case a: Ast.Array   => "["+a.values.map(expressionUnparser).mkString(",")+"]"
-          }
-        case e: Ast.InfixOperator   => infixUnparser(e)
-        case pe: Ast.PrefixOperator => prefixUnparser(pe)
-      }
+    t match {
+      case r: Ast.Reference => referenceUnparser(r)
+      case d: Ast.Data =>
+        d match {
+          case t: Ast.Text    => "\"" + t.value + "\""
+          case i: Ast.Integer => i.value.toString
+          case f: Ast.Float   => f.value.toString
+          case b: Ast.Bool    => b.value.toString
+          case a: Ast.Array   => "[" + a.values.map(expressionUnparser).mkString(",") + "]"
+        }
+      case e: Ast.InfixOperator   => infixUnparser(e)
+      case pe: Ast.PrefixOperator => prefixUnparser(pe)
+  }
 
   val infixUnparser: Unparser[Ast.InfixOperator] = (t: Ast.InfixOperator) => {
     val lhs = expressionUnparser(t.getLhs)
     val rhs = expressionUnparser(t.getRhs)
     val symbol = t match {
-      case _: Ast.Equals => "=="
+      case _: Ast.Equals   => "=="
       case _: Ast.LessThan => "<"
       case _: Ast.MoreThan => ">"
-      case _: Ast.OR => "||"
-      case _: Ast.AND => "&&"
-      case _: Ast.In => "in"
-      case _: Ast.XOR => "^"
-      case _: Ast.Plus => "+"
+      case _: Ast.OR       => "||"
+      case _: Ast.AND      => "&&"
+      case _: Ast.In       => "in"
+      case _: Ast.XOR      => "^"
+      case _: Ast.Plus     => "+"
     }
     s"($lhs $symbol $rhs)"
   }
@@ -53,7 +53,7 @@ object Unparser {
   }
 
   val outputFieldUnparser: Unparser[Ast.OutputField] = (t: Ast.OutputField) => {
-    "+"+t.path.mkString(".")
+    "+" + t.path.mkString(".")
   }
 
   val assignmentUnparser: Unparser[Ast.Assignment] = (t: Ast.Assignment) => {

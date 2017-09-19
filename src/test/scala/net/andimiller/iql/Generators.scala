@@ -11,9 +11,9 @@ object Generators {
       tail <- Gen.containerOf[List, String](Gen.alphaNumStr)
     } yield (Ast.Field(NonEmptyList(head, tail)))
   }
-  implicit val ref = implicitly[Arbitrary[Ast.Reference]]
-  implicit val data = implicitly[Arbitrary[Ast.Data]]
-  implicit val exp = implicitly[Arbitrary[Ast.Expression]]
-  implicit val plus = implicitly[Arbitrary[Ast.Plus]]
+  implicit val ref       = implicitly[Arbitrary[Ast.Reference]]
+  implicit val data      = implicitly[Arbitrary[Ast.Data]]
+  implicit val exp       = implicitly[Arbitrary[Ast.Expression]]
+  implicit val plus      = implicitly[Arbitrary[Ast.Plus]]
   implicit def shrink[T] = implicitly[Shrink[T]]
 }

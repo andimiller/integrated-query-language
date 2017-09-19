@@ -50,7 +50,7 @@ object Compiler {
   }
 
   type RunnableStep = ReaderT[IO, State, (State, Json)]
-  type Compiler[T] = T => RunnableStep
+  type Compiler[T]  = T => RunnableStep
 
   val referenceCompiler: Compiler[Ast.Reference] = (t: Ast.Reference) =>
     ReaderT { s: State =>

@@ -21,7 +21,7 @@ object ProgramPropertiesSpec {
       path <- Arbitrary.arbitrary[List[String]] suchThat {xs => !xs.contains("") && xs.filter(_.contains(".")).size == 0}
     } yield (Ast.OutputField(path))
   }
-  */
+ */
 }
 
 class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
@@ -29,7 +29,7 @@ class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
     var c = 0L
     import Compiler._
     check { (p: Ast.Plus) =>
-      c+=1
+      c += 1
       println(c)
       infixCompiler(p).run(State.empty).attempt.unsafeRunSync().isRight // as long as it didn't exception we're good
     }

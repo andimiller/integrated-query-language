@@ -61,12 +61,14 @@ class ParserSpec extends FlatSpec with MustMatchers {
 
   "Equality statements" should "be valid with two references" in {
     val input = ".foo==.bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(
+      Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
   }
 
   "Equality statements" should "be valid with two references and whitespace" in {
     val input = ".foo == .bar"
-    Parser.OperatorExpression.parse(input) must equal(Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
+    Parser.OperatorExpression.parse(input) must equal(
+      Success(Ast.Equals(Ast.Field(NonEmptyList.of("foo")), Ast.Field(NonEmptyList.of("bar"))), input.length))
   }
 
   "Arrays" should "happen" in {
@@ -119,13 +121,14 @@ class ParserSpec extends FlatSpec with MustMatchers {
     val r = Parser.program.parse(input)
     import Ast._
     r must equal(
-      Success(Program(List(Assignment(OutputField(List("a")), Text("a")), Assignment(OutputField(List("b")), Plus(Integer(2), Integer(2))))),
-              input.length))
+      Success(
+        Program(List(Assignment(OutputField(List("a")), Text("a")), Assignment(OutputField(List("b")), Plus(Integer(2), Integer(2))))),
+        input.length))
   }
 
   "Float" should "parse 0.0" in {
     val input = "0.0"
-    val r = Parser.float.parse(input)
+    val r     = Parser.float.parse(input)
     r must equal(Success(Ast.Float(0.0d), input.size))
   }
 }
