@@ -1,5 +1,8 @@
-package net.andimiller.iql
-import io.circe._, io.circe.parser._
+package net.andimiller.iql.examples
+
+import io.circe._
+import io.circe.parser._
+import net.andimiller.iql.{Compiler, Parser}
 
 object CirceTest extends App {
   /*val program =

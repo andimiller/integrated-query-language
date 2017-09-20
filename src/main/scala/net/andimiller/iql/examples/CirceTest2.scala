@@ -1,6 +1,8 @@
-package net.andimiller.iql
+package net.andimiller.iql.examples
 
-import io.circe._, io.circe.parser._
+import io.circe._
+import io.circe.parser._
+import net.andimiller.iql.{Compiler, Parser}
 
 object CirceTest2 extends App {
   var exit = false

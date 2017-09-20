@@ -1,7 +1,7 @@
-package net.andimiller.iql
+package net.andimiller.iql.examples
 
-import cats.implicits._, cats._, cats.data._, cats.syntax._
 import io.circe.Json
+import net.andimiller.iql.{Compiler, syntax}
 
 object CompositionDemo extends App {
 
