@@ -28,7 +28,7 @@ object CirceTest extends App {
           .programCompiler(parsedprogram)
           .run(Compiler.State(parse(json).right.toOption.getOrElse(Json.obj()), Json.obj()))
           .unsafeRunSync()
-      println(results._1.output)
+      println(results.output)
     }
   }
 }

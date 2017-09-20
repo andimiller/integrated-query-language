@@ -25,7 +25,7 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
         val result = Compiler
           .programCompiler(v)
           .run(Compiler.State(parse(inputjson).right.toOption.getOrElse(Json.obj()), Json.obj()))
-        result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":"b"}""")
+        result.unsafeRunSync().output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":"b"}""")
       case f =>
         println(f)
         fail("unable to parse query")
@@ -48,7 +48,7 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
         val result = Compiler
           .programCompiler(v)
           .run(Compiler.State(parse(inputjson).right.toOption.getOrElse(Json.obj()), Json.obj()))
-        result.unsafeRunSync()._1.output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":4}""")
+        result.unsafeRunSync().output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":4}""")
       case f =>
         println(f)
         fail("unable to parse query")

@@ -19,7 +19,7 @@ object CirceTest2 extends App {
           .vprogramCompiler(parsedprogram)
           .run(Compiler.State(parse(json).right.toOption.getOrElse(Json.obj()), Json.obj()))
           .unsafeRunSync()
-      println(results._1.output)
+      println(results.output)
     }
   }
 }

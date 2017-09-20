@@ -51,6 +51,8 @@ object Compiler {
 
   type RunnableStep = ReaderT[IO, State, (State, Json)]
   type Compiler[T]  = T => RunnableStep
+  type Program = ReaderT[IO, State, State]
+  type ProgramCompiler[T] = T => Program
 
   val referenceCompiler: Compiler[Ast.Reference] = (t: Ast.Reference) =>
     ReaderT { s: State =>
@@ -206,7 +208,7 @@ object Compiler {
       }
   }
 
-  val programCompiler: Compiler[Ast.Program] = (t: Ast.Program) =>
+  val programCompiler: ProgramCompiler[Ast.Program] = (t: Ast.Program) =>
     ReaderT { s0: State =>
       t.seq
         .map(assignmentCompiler)
@@ -214,10 +216,9 @@ object Compiler {
           case (s, p) =>
             s.flatMap(p.run).map(_._1)
         }
-        .map((_, Json.Null))
   }
 
-  val vprogramCompiler: Compiler[Ast.VProgram] = (t: Ast.VProgram) =>
+  val vprogramCompiler: ProgramCompiler[Ast.VProgram] = (t: Ast.VProgram) =>
     ReaderT { s0: State =>
       t.seq
         .map(validationCompiler)
@@ -225,7 +226,6 @@ object Compiler {
           case (s, p) =>
             s.flatMap(p.run).map(_._1)
         }
-        .map((_, Json.Null))
 
   }
 }
