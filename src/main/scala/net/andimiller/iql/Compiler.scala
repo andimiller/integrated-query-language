@@ -8,41 +8,7 @@ import cats.implicits._
 
 object Compiler {
 
-  implicit class PathCreatingCursor(cursor: ACursor) {
-    def path(s: String): ACursor = {
-      val attempt = cursor.downField(s)
-      attempt.failed match {
-        case true =>
-          cursor.withFocus(_.mapObject(_.add(s, Json.obj()))).downField(s)
-        case false => attempt
-      }
-    }
-  }
-
-  object CirceMatchers {
-    object JNumber {
-      def unapply(j: Json): Option[Double] =
-        Option(j).flatMap(_.asNumber.map(_.toDouble))
-    }
-    object JInteger {
-      def unapply(j: Json): Option[Int] =
-        Option(j).flatMap(_.asNumber.flatMap(_.toInt))
-    }
-    object JBoolean {
-      def unapply(j: Json): Option[Boolean] = Option(j).flatMap(_.asBoolean)
-    }
-    object JArray {
-      def unapply(j: Json): Option[Vector[Json]] = Option(j).flatMap(_.asArray)
-    }
-    object JFloat {
-      def unapply(j: Json): Option[Double] =
-        Option(j).flatMap(_.asNumber).map(_.toDouble)
-    }
-    object JString {
-      def unapply(j: Json): Option[String] = Option(j).flatMap(_.asString)
-    }
-  }
-  import CirceMatchers._
+  import utils.CirceHelpers._, CirceMatchers._
 
   case class State(input: Json, output: Json)
   object State {
