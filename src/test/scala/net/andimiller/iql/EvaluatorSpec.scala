@@ -2,8 +2,10 @@ package net.andimiller.iql
 
 import fastparse.core.Parsed.Success
 import org.scalatest.{FlatSpec, MustMatchers}
-import io.circe._, io.circe.parser._
+import io.circe._
+import io.circe.parser._
 import Compiler._
+import cats.data.{NonEmptyList, Validated}
 
 class EvaluatorSpec extends FlatSpec with MustMatchers {
 
@@ -253,6 +255,18 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
           .run(State(Json.obj(), Json.obj()))
           .unsafeRunSync()
         output.noSpaces must equal("{\"output\":42}")
+      case _ => fail("unable to parse query")
+    }
+  }
+
+  "Validation Programs" should "accumulate errors" in {
+    Parser.validationProgram.parse(
+      """.a: required
+        |.a: int
+      """.stripMargin) match {
+      case Success(v, i) =>
+        val result = vprogramCompiler(v).run(Json.obj()).unsafeRunSync
+        result must equal(Validated.Invalid(NonEmptyList(".a must not be null", List(".a must be a number"))))
       case _ => fail("unable to parse query")
     }
   }

@@ -1,10 +1,11 @@
 package net.andimiller.iql
 
-import cats.data.{Reader, ReaderT, StateT}
+import cats.data._
 import io.circe._
 import cats.effect._
 import cats._
 import cats.implicits._
+import cats.data.Validated.{invalidNel, validNel}
 
 object Compiler {
 
@@ -15,10 +16,12 @@ object Compiler {
     val empty = State(Json.obj(), Json.obj())
   }
 
-  type RunnableStep = ReaderT[IO, State, (State, Json)]
-  type Compiler[T]  = T => RunnableStep
-  type Program = ReaderT[IO, State, State]
-  type ProgramCompiler[T] = T => Program
+  type RunnableStep          = ReaderT[IO, State, (State, Json)]
+  type Compiler[T]           = T => RunnableStep
+  type Program               = ReaderT[IO, State, State]
+  type ProgramCompiler[T]    = T => Program
+  type Validation            = ReaderT[IO, Json, ValidatedNel[String, Json]]
+  type ValidationCompiler[T] = T => Validation
 
   val referenceCompiler: Compiler[Ast.Reference] = (t: Ast.Reference) =>
     ReaderT { s: State =>
@@ -150,27 +153,23 @@ object Compiler {
       }
   }
 
-  val validationCompiler: Compiler[Ast.Validation] = (t: Ast.Validation) =>
-    ReaderT { s: State =>
+  val validationCompiler: ValidationCompiler[Ast.Validation] = (t: Ast.Validation) =>
+    ReaderT { j: Json =>
       IO {
+        val path = "." + t.lhs.path.mkString(".")
         val item = t.lhs.path
-          .foldLeft(s.input.hcursor.asInstanceOf[ACursor]) {
+          .foldLeft(j.hcursor.asInstanceOf[ACursor]) {
             case (c, k) => c.downField(k)
           }
           .focus
           .getOrElse(Json.Null)
-        val result = t.rhs match {
-          case "required" => !item.isNull
-          case "int"      => item.isNumber
-          case "string"   => item.isString
-          case "boolean"  => item.isBoolean
+        t.rhs match {
+          case "required" if item.isNull    => invalidNel[String, Json](s"$path must not be null")
+          case "int" if !item.isNumber      => invalidNel[String, Json](s"$path must be a number")
+          case "string" if !item.isString   => invalidNel[String, Json](s"$path must be a string")
+          case "boolean" if !item.isBoolean => invalidNel[String, Json](s"$path must be a boolean")
+          case _                            => validNel[String, Json](j)
         }
-        val output = t.lhs.path
-          .foldLeft(s.output.hcursor.asInstanceOf[ACursor]) { _ path _ }
-          .withFocus(_ => Json.fromBoolean(result))
-          .top
-          .getOrElse(s.output)
-        (s.copy(output = output), Json.Null)
       }
   }
 
@@ -184,14 +183,12 @@ object Compiler {
         }
   }
 
-  val vprogramCompiler: ProgramCompiler[Ast.VProgram] = (t: Ast.VProgram) =>
-    ReaderT { s0: State =>
-      t.seq
+  val vprogramCompiler: ValidationCompiler[Ast.VProgram] = (t: Ast.VProgram) =>
+    ReaderT { j: Json =>
+      val r: IO[NonEmptyList[ValidatedNel[String, Json]]] = t.seq
         .map(validationCompiler)
-        .foldLeft(IO.pure(s0)) {
-          case (s, p) =>
-            s.flatMap(p.run).map(_._1)
-        }
-
+        .map(_.run(j))
+        .sequence
+      r.map(_.reduceLeft(_ <+> _))
   }
 }

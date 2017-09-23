@@ -47,5 +47,5 @@ object Ast {
 
   // program
   case class Program(seq: List[Assignment])
-  case class VProgram(seq: List[Validation])
+  case class VProgram(seq: NonEmptyList[Validation])
 }

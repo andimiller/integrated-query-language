@@ -8,6 +8,7 @@ object syntax {
   }
   implicit class StringSyntax(s: String) {
     def unsafeIQLParse = Parser.program.parse(s).get.value
+    def unsafeIQLParseV = Parser.validationProgram.parse(s).get.value
   }
   implicit class ProgramSyntax(p: Ast.Program) {
     def compile = Compiler.programCompiler.apply(p)
