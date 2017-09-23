@@ -73,6 +73,6 @@ object Unparser {
   }
 
   val vprogramUnparser: Unparser[Ast.VProgram] = (t: Ast.VProgram) => {
-    t.seq.map(validationUnparser).mkString("\n")
+    t.seq.map(validationUnparser).toList.mkString("\n")
   }
 }
