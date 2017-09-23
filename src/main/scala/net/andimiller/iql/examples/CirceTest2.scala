@@ -19,9 +19,9 @@ object CirceTest2 extends App {
       val results =
         Compiler
           .vprogramCompiler(parsedprogram)
-          .run(Compiler.State(parse(json).right.toOption.getOrElse(Json.obj()), Json.obj()))
+          .run(parse(json).right.toOption.getOrElse(Json.obj()))
           .unsafeRunSync()
-      println(results.output)
+      println(results)
     }
   }
 }
