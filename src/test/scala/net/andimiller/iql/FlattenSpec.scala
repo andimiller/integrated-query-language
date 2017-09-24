@@ -1,6 +1,7 @@
 package net.andimiller.iql
 
 import io.circe.{ACursor, Json}
+import io.circe.parser.parse
 import org.scalatest.{FlatSpec, MustMatchers}
 import cats._
 import cats.syntax._
@@ -23,4 +24,15 @@ class FlattenSpec extends FlatSpec with MustMatchers {
     Json.obj("a" -> Json.fromInt(2)).flatten must equal(Json.obj(".a" -> Json.fromInt(2)))
   }
 
+  "Flatten" should "work on some json" in {
+    val j = parse("""{
+      |  "a": 1,
+      |  "b": 2,
+      |  "c": 3,
+      |  "d": 4
+      |}""".stripMargin).right.get
+    println(j)
+    Flatten.flatten(j)
+
+  }
 }

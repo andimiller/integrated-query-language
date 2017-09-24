@@ -14,6 +14,7 @@ object Compiler {
   case class State(input: Json, output: Json)
   object State {
     val empty = State(Json.obj(), Json.obj())
+    def forInput(a: Json) = State(a, Json.obj())
   }
 
   type RunnableStep          = ReaderT[IO, State, (State, Json)]

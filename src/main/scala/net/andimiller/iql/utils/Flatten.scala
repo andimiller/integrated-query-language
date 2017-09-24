@@ -14,11 +14,11 @@ object Flatten {
     val here = "."+path.mkString(".")
     j match {
       case JObject(o) =>
-        o.keys.foldLeft(output){case (cursor, key) => iflatten(o.apply(key).get, path :+ key, cursor) }
+        o.keys.foldLeft(output){case (cursor, key) => iflatten(o.apply(key).get, path :+ key, cursor)}
       case JArray(a) =>
         a.zipWithIndex.foldLeft(output) { case (cursor, (json, index)) => iflatten(json, path :+ s"[$index]", cursor) }
       case _ =>
-        output.path(here).withFocus(_ => j)
+        output.path(here).withFocus(_ => j).up
     }
   }
 }
