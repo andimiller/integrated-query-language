@@ -95,5 +95,5 @@ object Parser {
   val newline = P("\n" | "\r\n" | "\r" | "\f" | End)
   val program = P(assignment.rep).map(t => Ast.Program(t.toList))
   val validationProgram =
-    P(validation ~ newline ~/ (validation ~/ newline).rep).map{case (v, vs) => Ast.VProgram(NonEmptyList(v, vs.toList))}
+    P(validation ~ newline ~/ (validation ~/ newline).rep).map { case (v, vs) => Ast.VProgram(NonEmptyList(v, vs.toList)) }
 }

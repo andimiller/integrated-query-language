@@ -7,16 +7,14 @@ import net.andimiller.iql.Compiler
 
 object TestDiff extends App {
 
-  val a = parse(
-    """{
+  val a                 = parse("""{
       |  "a": 1,
       |  "b": 2,
       |  "c": 3,
       |  "d": 4
       |}
     """.stripMargin).right.get
-  val b = parse(
-    """{
+  val b                 = parse("""{
       |  "a": 4,
       |  "b": 3,
       |  "c": 2,
