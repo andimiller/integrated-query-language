@@ -16,7 +16,11 @@ class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
     check { (p: Ast.Plus) =>
       c += 1
       println(c)
-      infixCompiler(p).run(State.empty).attempt.unsafeRunSync().isRight // as long as it didn't exception we're good
+      infixCompiler(p)
+        .run(State.empty)
+        .attempt
+        .unsafeRunSync()
+        .isRight // as long as it didn't exception we're good
     }
   }
   "Expression" should "be unparseable then parseable" in {

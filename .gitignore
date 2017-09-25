@@ -18,3 +18,7 @@ project/plugins/project/
 
 # IDEA
 .idea/
+
+# ensime
+.ensime
+.ensime_cache/

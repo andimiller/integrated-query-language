@@ -260,8 +260,7 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
   }
 
   "Validation Programs" should "accumulate errors" in {
-    Parser.validationProgram.parse(
-      """.a: required
+    Parser.validationProgram.parse(""".a: required
         |.a: int
       """.stripMargin) match {
       case Success(v, i) =>

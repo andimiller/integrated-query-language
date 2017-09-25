@@ -1,10 +1,9 @@
 package net.andimiller.iql.examples
 
 import io.circe.Json
-import net.andimiller.iql.{Compiler, syntax}
+import net.andimiller.iql.{syntax, Compiler}
 
 object CompositionDemo extends App {
-
 
   import syntax._
 
@@ -13,15 +12,21 @@ object CompositionDemo extends App {
     ".c = .a",
     ".d = (.a + .a)"
   ).map {
-    _.unsafeIQLParse
-  }.map {
-    _.compile
-  }.reduce {
-    _ andThen _
-  }.run(Compiler.State(Json.obj("a" -> Json.fromInt(1)), Json.obj()))
+      _.unsafeIQLParse
+    }
+    .map {
+      _.compile
+    }
+    .reduce {
+      _ andThen _
+    }
+    .run(Compiler.State(Json.obj("a" -> Json.fromInt(1)), Json.obj()))
 
   println(program.unsafeRunSync().output.spaces2)
 
-
-  println(iql".result = (1 + 2)".compile.run(Compiler.State.empty).unsafeRunSync().output)
+  println(
+    iql".result = (1 + 2)".compile
+      .run(Compiler.State.empty)
+      .unsafeRunSync()
+      .output)
 }

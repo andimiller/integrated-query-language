@@ -15,7 +15,12 @@ class FlattenSpec extends FlatSpec with MustMatchers {
   }
   "Flatten" should "work on some serious nested stuff" in {
     import utils.CirceHelpers.PathCreatingCursor
-    val input  = List.fill(100)("a").foldLeft(Json.obj().hcursor.asInstanceOf[ACursor]) { _ path _ }.withFocus(_ => Json.fromInt(1)).top.get
+    val input = List
+      .fill(100)("a")
+      .foldLeft(Json.obj().hcursor.asInstanceOf[ACursor]) { _ path _ }
+      .withFocus(_ => Json.fromInt(1))
+      .top
+      .get
     val result = Flatten.flatten(input)
     result must equal(Json.obj("." + List.fill(100)("a").mkString(".") -> Json.fromInt(1)))
   }

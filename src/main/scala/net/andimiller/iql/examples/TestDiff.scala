@@ -23,6 +23,8 @@ object TestDiff extends App {
     """.stripMargin).right.get
   val potentialmappings = DiffEm.diff(a, b)
   println(potentialmappings)
-  val r = potentialmappings.map(Compiler.programCompiler).map(_.run(Compiler.State.forInput(a)).unsafeRunSync())
+  val r = potentialmappings
+    .map(Compiler.programCompiler)
+    .map(_.run(Compiler.State.forInput(a)).unsafeRunSync())
   println(r)
 }
