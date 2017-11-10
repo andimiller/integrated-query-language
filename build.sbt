@@ -34,7 +34,7 @@ val jvmSettings = Seq(
 
 val jsSettings = Seq(
   libraryDependencies += "com.lihaoyi" %%% "fastparse" % "0.4.3",
-  libraryDepepdencies += "com.lihaoyi" %%% "fansi" % "0.2.5",
+  libraryDependencies += "com.lihaoyi" %%% "fansi" % "0.2.5",
   libraryDependencies += "org.typelevel" %%% "cats" % "0.9.0",
   libraryDependencies += "org.typelevel" %%% "cats-effect" % "0.4",
   libraryDependencies += "org.typelevel" %%% "kittens" % "1.0.0-RC0",
