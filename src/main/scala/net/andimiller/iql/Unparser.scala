@@ -53,7 +53,7 @@ object Unparser {
   }
 
   val outputFieldUnparser: Unparser[Ast.OutputField] = (t: Ast.OutputField) => {
-    "+" + t.path.mkString(".")
+    "." + t.path.mkString(".")
   }
 
   val assignmentUnparser: Unparser[Ast.Assignment] = (t: Ast.Assignment) => {

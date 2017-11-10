@@ -7,13 +7,13 @@ import cats._, cats.syntax._, cats.instances._, cats.implicits._, cats.data._
 
 object DiffEm {
 
-  def cartesianProduct[T](xss: List[List[T]]): List[List[T]] = xss match {
-    case Nil          => List.empty[List[T]]
-    case head :: Nil  => List(head)
-    case head :: tail => for (xh <- head; xt <- cartesianProduct(tail)) yield xh :: xt
+  def cartesianProduct[T](xss: List[List[T]]): Iterator[List[T]] = xss match {
+    case Nil          => Iterator.empty
+    case head :: Nil  => Iterator.single(head)
+    case head :: tail => for (xh <- head.toIterator; xt <- cartesianProduct(tail)) yield xh :: xt
   }
 
-  def diff(a: Json, b: Json): List[Ast.Program] = {
+  def diff(a: Json, b: Json): Iterator[Ast.Program] = {
     // flattened
     val fa = Flatten.flatten(a)
     val fb = Flatten.flatten(b)
@@ -36,6 +36,7 @@ object DiffEm {
           )
       }
     }.toList
+    println("generated ASTs")
     // generate every program
     cartesianProduct(mappings).map(Ast.Program)
   }
