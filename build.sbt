@@ -13,7 +13,8 @@ val circeVersion = "0.9.0-M1"
 val sharedSettings = Seq(
   scalacOptions += "-Ypartial-unification",
   scalaVersion := "2.11.11",
-  resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases"
+  resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases",
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 )
 
 val jvmSettings = Seq(
@@ -52,4 +53,3 @@ lazy val coreJS = core.js
 
 bintrayReleaseOnPublish in ThisBuild := true
 
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
