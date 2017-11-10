@@ -10,6 +10,7 @@ import org.scalatest._
 import Generators._
 
 class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
+  /*
   "Plus" should "be completely defined" in {
     var c = 0L
     import Compiler._
@@ -43,4 +44,5 @@ class ProgramPropertiesSpec extends FlatSpec with Checkers with Matchers {
       }
     }
   }
+  */
 }
