@@ -12,6 +12,7 @@ object Hilighting extends App {
     "equals"          -> "topLevelOperator",
     "is"              -> "topLevelOperator",
     "outputReference" -> "reference",
+    "reference"       -> "reference",
     "number"          -> "literal",
     "string"          -> "literal",
     "boolean"         -> "literal"
@@ -26,8 +27,8 @@ object Hilighting extends App {
 
   val defaultColours = Map(
     "topLevelOperator" -> fansi.Color.Cyan,
-    "reference"        -> fansi.Color.LightBlue,
-    "literal"          -> fansi.Color.LightYellow
+    "reference"        -> fansi.Color.Blue,
+    "literal"          -> fansi.Color.Yellow
   )
 
   def analyse(s: String): fansi.Str = {
