@@ -25,6 +25,8 @@ object Parser {
   val lowercase = P(CharIn('a' to 'z'))
   val uppercase = P(CharIn('A' to 'Z'))
   val letter    = P(lowercase | uppercase)
+  val equals    = P("=")
+  val is        = P(":")
 
   val hexDigit      = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
   val unicodeEscape = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
@@ -86,9 +88,9 @@ object Parser {
 
   // transforms and validation
   val assignment =
-    P(outputReference ~ space.? ~ "=" ~/ space.? ~ toplevelExpression)
+    P(outputReference ~ space.? ~ equals ~/ space.? ~ toplevelExpression)
       .map(Ast.Assignment.tupled)
-  val validation = P(outputReference ~ space.? ~ ":" ~ space.? ~/ function)
+  val validation = P(outputReference ~ space.? ~ is ~ space.? ~/ function)
     .map(Ast.Validation.tupled)
 
   // full programs
