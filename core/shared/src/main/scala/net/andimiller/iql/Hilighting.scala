@@ -5,8 +5,7 @@ import fastparse.all._
 import scala.collection.mutable
 import cats._, cats.implicits._, cats.syntax._
 
-object Hilighting extends App {
-
+object Hilighting {
 
   val parserToType = List(
     "equals"          -> "topLevelOperator",
@@ -17,7 +16,7 @@ object Hilighting extends App {
     "string"          -> "literal",
     "boolean"         -> "literal"
   )
-  val parserToTypeKeys = parserToType.map(_._1).toSet
+  val parserToTypeKeys: Set[String] = parserToType.map(_._1).toSet
 
   val typePriority = Map(
     "topLevelOperator" -> 1,
@@ -58,8 +57,4 @@ object Hilighting extends App {
       }
     }
   }
-
-  val s = analyse(".result = (1 + 2) + .a")
-  println(s)
-
 }
