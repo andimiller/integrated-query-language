@@ -93,6 +93,33 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
+  "Evaluating a coalesce where left is non-null" should "return left" in {
+    Parser.OperatorExpression.parse(".a | .b") match {
+      case Success(v, i) =>
+        val (_, output) = expressionCompiler(v).run(State(Json.obj("a" -> Json.fromInt(1)), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromInt(1))
+      case _ => fail("unable to parse query")
+    }
+  }
+
+  "Evaluating a coalesce where left is null and right is non-null" should "return right" in {
+    Parser.OperatorExpression.parse(".a | .b") match {
+      case Success(v, i) =>
+        val (_, output) = expressionCompiler(v).run(State(Json.obj("b" -> Json.fromInt(2)), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromInt(2))
+      case _ => fail("unable to parse query")
+    }
+  }
+
+  "Evaluating a coalesce where left is null and right is null" should "return null" in {
+    Parser.OperatorExpression.parse(".a | .b") match {
+      case Success(v, i) =>
+        val (_, output) = expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.Null)
+      case _ => fail("unable to parse query")
+    }
+  }
+
   "Evaluating a multi-level OR that's true" should "return true" in {
     Parser.OperatorExpression.parse("(1==1)||(2==2)") match {
       case Success(v, i) =>

@@ -38,6 +38,7 @@ object Ast {
   case class XOR(lhs: Expression, rhs: Expression)      extends InfixOperator(lhs, rhs)
   case class In(lhs: Expression, rhs: Expression)       extends InfixOperator(lhs, rhs)
   case class Plus(lhs: Expression, rhs: Expression)     extends InfixOperator(lhs, rhs)
+  case class Coalesce(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
 
   // transforms
   sealed trait Transform

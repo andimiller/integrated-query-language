@@ -120,6 +120,11 @@ object Compiler {
                     case (JString(l), JString(r)) => Json.fromString(l + r)
                     case _                        => Json.Null
                   }
+                case coalesce: Ast.Coalesce =>
+                  (lhs, rhs) match {
+                    case (Json.Null, r) => r
+                    case (l, _)         => l
+                  }
               }
               (s2, result)
           }

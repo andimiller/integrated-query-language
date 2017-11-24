@@ -67,7 +67,7 @@ object Parser {
   // code
   val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | bracketedExpression)
   val OperatorExpression =
-    P(Expression ~ space.? ~ ("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+").! ~/ space.? ~/ Expression)
+    P(Expression ~ space.? ~ ("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression)
       .map {
         case (l, operator, r) =>
           operator match {
@@ -79,6 +79,7 @@ object Parser {
             case "^"  => Ast.XOR(l, r)
             case "in" => Ast.In(l, r)
             case "+"  => Ast.Plus(l, r)
+            case "|"  => Ast.Coalesce(l, r)
           }
       }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
