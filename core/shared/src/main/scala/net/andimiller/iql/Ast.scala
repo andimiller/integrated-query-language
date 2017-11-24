@@ -38,6 +38,9 @@ object Ast {
   case class XOR(lhs: Expression, rhs: Expression)      extends InfixOperator(lhs, rhs)
   case class In(lhs: Expression, rhs: Expression)       extends InfixOperator(lhs, rhs)
   case class Plus(lhs: Expression, rhs: Expression)     extends InfixOperator(lhs, rhs)
+  case class Minus(lhs: Expression, rhs: Expression)    extends InfixOperator(lhs, rhs)
+  case class Multiply(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
+  case class Divide(lhs: Expression, rhs: Expression)   extends InfixOperator(lhs, rhs)
   case class Coalesce(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
 
   // transforms

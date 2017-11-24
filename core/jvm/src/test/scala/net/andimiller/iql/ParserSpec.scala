@@ -113,6 +113,12 @@ class ParserSpec extends FlatSpec with MustMatchers {
     r must equal(Success(Ast.Assignment(Ast.OutputField(List("b")), Ast.Plus(Ast.Integer(2), Ast.Integer(2))), input.length))
   }
 
+  "Expressions" should "be chainable without braces" in {
+    val input = ".result = 1 + 2 * 3 / 4"
+    val r     = Parser.assignment.parse(input, instrument = instrumentFunction)
+    println(r)
+  }
+
   "A two line program" should "parse correctly via program" in {
     val input =
       """.a = "a"

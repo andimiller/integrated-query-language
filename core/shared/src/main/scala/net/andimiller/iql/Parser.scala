@@ -67,7 +67,7 @@ object Parser {
   // code
   val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | bracketedExpression)
   val OperatorExpression: Parser[Ast.Expression] =
-    P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression).rep(min = 1))
+    P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "-" | "*" | "/" | "|").! ~/ space.? ~/ (OperatorExpression | Expression)).rep(min = 1))
       .map {
         case (l, exps) =>
           exps.foldLeft(l) { case (acc, (operator, exp)) =>
@@ -80,11 +80,14 @@ object Parser {
               case "^"  => Ast.XOR(acc, exp)
               case "in" => Ast.In(acc, exp)
               case "+"  => Ast.Plus(acc, exp)
+              case "-"  => Ast.Minus(acc, exp)
+              case "*"  => Ast.Multiply(acc, exp)
+              case "/"  => Ast.Divide(acc, exp)
               case "|"  => Ast.Coalesce(acc, exp)
             }
           }
       }
-  val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
+  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
   val toplevelExpression: Parser[Ast.Expression]     = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!

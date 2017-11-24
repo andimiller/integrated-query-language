@@ -40,6 +40,9 @@ object Unparser {
       case _: Ast.In       => "in"
       case _: Ast.XOR      => "^"
       case _: Ast.Plus     => "+"
+      case _: Ast.Minus    => "-"
+      case _: Ast.Multiply => "*"
+      case _: Ast.Divide   => "/"
       case _: Ast.Coalesce => "|"
     }
     s"($lhs $symbol $rhs)"
