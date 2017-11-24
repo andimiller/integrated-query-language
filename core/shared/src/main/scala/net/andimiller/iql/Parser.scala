@@ -66,20 +66,22 @@ object Parser {
 
   // code
   val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | bracketedExpression)
-  val OperatorExpression =
-    P(Expression ~ space.? ~ ("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression)
+  val OperatorExpression: Parser[Ast.Expression] =
+    P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression).rep(min = 1))
       .map {
-        case (l, operator, r) =>
-          operator match {
-            case "==" => Ast.Equals(l, r)
-            case "<"  => Ast.LessThan(l, r)
-            case ">"  => Ast.MoreThan(l, r)
-            case "&&" => Ast.AND(l, r)
-            case "||" => Ast.OR(l, r)
-            case "^"  => Ast.XOR(l, r)
-            case "in" => Ast.In(l, r)
-            case "+"  => Ast.Plus(l, r)
-            case "|"  => Ast.Coalesce(l, r)
+        case (l, exps) =>
+          exps.foldLeft(l) { case (acc, (operator, exp)) =>
+            operator match {
+              case "==" => Ast.Equals(acc, exp)
+              case "<"  => Ast.LessThan(acc, exp)
+              case ">"  => Ast.MoreThan(acc, exp)
+              case "&&" => Ast.AND(acc, exp)
+              case "||" => Ast.OR(acc, exp)
+              case "^"  => Ast.XOR(acc, exp)
+              case "in" => Ast.In(acc, exp)
+              case "+"  => Ast.Plus(acc, exp)
+              case "|"  => Ast.Coalesce(acc, exp)
+            }
           }
       }
   val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")

@@ -6,8 +6,17 @@ import io.circe._
 import io.circe.parser._
 import Compiler._
 import cats.data.{NonEmptyList, Validated}
+import fastparse.all._
 
 class EvaluatorSpec extends FlatSpec with MustMatchers {
+
+  // use me for debugging parsers
+  val instrumentFunction = (parser: fastparse.all.Parser[_], index: Int, continuation: () => Parsed[_]) => {
+    println(s"entering ${parser} at $index")
+    val result = continuation()
+    val end = result.index
+    println(s"exiting $parser at $end")
+  }
 
   "Evaluating a reference" should "fetch the value from the global variable map" in {
     val input =

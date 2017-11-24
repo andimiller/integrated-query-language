@@ -6,11 +6,20 @@ import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
 import cats.syntax._
+import fastparse.all._
 
 /**
   * Created by andi on 23/12/2015.
   */
 class ParserSpec extends FlatSpec with MustMatchers {
+
+  // use me for debugging parsers
+  val instrumentFunction = (parser: Parser[_], index: Int, continuation: () => Parsed[_]) => {
+    println(s"entering ${parser} at $index")
+    val result = continuation()
+    val end = result.index
+    println(s"exiting $parser at $end")
+  }
 
   "Strings" should "only be valid if they have double quotes on both ends" in {
     val inputs = Map(
