@@ -3,8 +3,10 @@ package net.andimiller.iql
 import cats.data.NonEmptyList
 
 object Ast {
+  sealed trait MatchLHS
+  case object AnyMatch extends MatchLHS
   // structural types
-  sealed trait Expression
+  sealed trait Expression extends MatchLHS
   // reference types
   sealed trait Reference                       extends Expression
   case class Field(path: NonEmptyList[String]) extends Reference
@@ -39,6 +41,9 @@ object Ast {
   case class In(lhs: Expression, rhs: Expression)       extends InfixOperator(lhs, rhs)
   case class Plus(lhs: Expression, rhs: Expression)     extends InfixOperator(lhs, rhs)
   case class Coalesce(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
+
+  type CaseBlock = (MatchLHS, Expression)
+  case class Match(term: Expression, cases: List[CaseBlock])
 
   // transforms
   sealed trait Transform

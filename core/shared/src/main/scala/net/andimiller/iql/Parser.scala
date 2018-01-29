@@ -27,6 +27,7 @@ object Parser {
   val letter    = P(lowercase | uppercase)
   val equals    = P("=")
   val is        = P(":")
+  val goesTo    = P("=>")
 
   val hexDigit      = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
   val unicodeEscape = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
@@ -88,6 +89,12 @@ object Parser {
   val toplevelExpression: Parser[Ast.Expression]     = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
+
+  val caseLHS: Parser[Ast.MatchLHS] = P(P("_").map{_ => Ast.AnyMatch} | Expression)
+  val caseBlock: Parser[Ast.CaseBlock] = P("|" ~/ P(" ").? ~ caseLHS ~/ goesTo ~/ Expression ~ newline)
+  val matchBlock: Parser[Ast.Match] = P("match " ~/ Expression ~/ newline ~/ P("|" ~ P(" ").? ~ caseBlock.rep)).map { case (e, cs) =>
+      Ast.Match(e, cs.toList)
+  }
 
   // transforms and validation
   val assignment =
