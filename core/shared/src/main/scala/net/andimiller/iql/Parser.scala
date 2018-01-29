@@ -85,7 +85,7 @@ object Parser {
             }
           }
       }
-  val bracketedExpression: Parser[Ast.InfixOperator] = P("(" ~/ OperatorExpression ~ ")")
+  val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
   val toplevelExpression: Parser[Ast.Expression]     = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
