@@ -91,8 +91,8 @@ object Parser {
   val function = P("required" | "int" | "bool" | "string").!
 
   val caseLHS: Parser[Ast.MatchLHS] = P(P("_").map{_ => Ast.AnyMatch} | Expression)
-  val caseBlock: Parser[Ast.CaseBlock] = P("|" ~/ P(" ").? ~ caseLHS ~/ goesTo ~/ Expression ~ newline)
-  val matchBlock: Parser[Ast.Match] = P("match " ~/ Expression ~/ newline ~/ P("|" ~ P(" ").? ~ caseBlock.rep)).map { case (e, cs) =>
+  val caseBlock: Parser[Ast.CaseBlock] = P("|" ~/ space.? ~/ caseLHS ~ space.? ~/ goesTo ~ space.? ~/ Expression ~ newline)
+  val matchBlock: Parser[Ast.Match] = P("match " ~/ Expression ~/ newline ~/ caseBlock.rep(2)).map { case (e, cs) =>
       Ast.Match(e, cs.toList)
   }
 

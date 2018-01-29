@@ -7,6 +7,7 @@ import cats.data.NonEmptyList
 import cats.implicits._
 import cats.syntax._
 import fastparse.all._
+import net.andimiller.iql.Ast.{Integer, Match, Text}
 
 /**
   * Created by andi on 23/12/2015.
@@ -139,5 +140,17 @@ class ParserSpec extends FlatSpec with MustMatchers {
     val input = "0.0"
     val r     = Parser.float.parse(input)
     r must equal(Success(Ast.Float(0.0d), input.size))
+  }
+
+  "Match" should "parse a basic match structure" in {
+    val input = """match .a
+| 1 => "a"
+| 2 => "b""""
+    val r = Parser.matchBlock.parse(input)
+    r must equal(
+      Success(
+        Ast.Match(Ast.Field(NonEmptyList.of("a")), List((Integer(1),Text("a")), (Integer(2),Text("b")))), input.length
+      )
+    )
   }
 }
