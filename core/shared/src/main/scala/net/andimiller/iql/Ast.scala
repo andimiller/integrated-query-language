@@ -42,7 +42,7 @@ object Ast {
   case class Plus(lhs: Expression, rhs: Expression)     extends InfixOperator(lhs, rhs)
   case class Coalesce(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
 
-  type CaseBlock = (MatchLHS, Expression)
+  case class CaseBlock(condition: MatchLHS, result: Expression)
   case class Match(term: Expression, cases: List[CaseBlock])
 
   // transforms

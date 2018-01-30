@@ -149,7 +149,7 @@ class ParserSpec extends FlatSpec with MustMatchers {
     val r = Parser.matchBlock.parse(input)
     r must equal(
       Success(
-        Ast.Match(Ast.Field(NonEmptyList.of("a")), List((Integer(1),Text("a")), (Integer(2),Text("b")))), input.length
+        Ast.Match(Ast.Field(NonEmptyList.of("a")), List(Ast.CaseBlock(Integer(1),Text("a")), Ast.CaseBlock(Integer(2),Text("b")))), input.length
       )
     )
   }

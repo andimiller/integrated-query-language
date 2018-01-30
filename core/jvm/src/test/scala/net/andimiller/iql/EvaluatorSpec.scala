@@ -306,4 +306,19 @@ class EvaluatorSpec extends FlatSpec with MustMatchers {
     }
   }
 
+  "Coalesce" should "work in the way it's needed for match blocks" in {
+     Parser.OperatorExpression.parse("1 | 2") match {
+      case Success(v, i) =>
+        val (_, output) = expressionCompiler(v).run(State(Json.obj(), Json.obj())).unsafeRunSync()
+        output must equal(Json.fromInt(1))
+      case _ => fail("unable to parse query")
+    }
+  }
+
+  "Matching blocks" should "coalesce" in {
+    val m = Compiler.matchCompiler(Ast.Match(Ast.Integer(2), List(Ast.CaseBlock(Ast.Integer(1), Ast.Text("one")), Ast.CaseBlock(Ast.Integer(2), Ast.Text("two")))))
+    m.run(State.empty).unsafeRunSync()._2 must equal(Json.fromString("two"))
+  }
+
+
 }

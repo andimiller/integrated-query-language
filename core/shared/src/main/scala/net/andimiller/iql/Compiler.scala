@@ -6,6 +6,7 @@ import cats.effect._
 import cats._
 import cats.implicits._
 import cats.data.Validated.{invalidNel, validNel}
+import net.andimiller.iql.Ast.{AnyMatch, Expression}
 
 object Compiler {
 
@@ -13,15 +14,15 @@ object Compiler {
 
   case class State(input: Json, output: Json)
   object State {
-    val empty             = State(Json.obj(), Json.obj())
+    val empty = State(Json.obj(), Json.obj())
     def forInput(a: Json) = State(a, Json.obj())
   }
 
-  type RunnableStep          = ReaderT[IO, State, (State, Json)]
-  type Compiler[T]           = T => RunnableStep
-  type Program               = ReaderT[IO, State, State]
-  type ProgramCompiler[T]    = T => Program
-  type Validation            = ReaderT[IO, Json, ValidatedNel[String, Json]]
+  type RunnableStep = ReaderT[IO, State, (State, Json)]
+  type Compiler[T] = T => RunnableStep
+  type Program = ReaderT[IO, State, State]
+  type ProgramCompiler[T] = T => Program
+  type Validation = ReaderT[IO, Json, ValidatedNel[String, Json]]
   type ValidationCompiler[T] = T => Validation
 
   val referenceCompiler: Compiler[Ast.Reference] = (t: Ast.Reference) =>
@@ -91,11 +92,13 @@ object Compiler {
                 case or: Ast.OR =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l || r)
+                    case (JBoolean(l), r)           => r
                     case _                          => Json.Null
                   }
                 case and: Ast.AND =>
                   (lhs, rhs) match {
                     case (JBoolean(l), JBoolean(r)) => Json.fromBoolean(l && r)
+                    case (JBoolean(l), r) if l      => r
                     case _                          => Json.Null
                   }
                 case in: Ast.In =>
@@ -131,6 +134,22 @@ object Compiler {
       }
   }
 
+  val caseBlocksCompiler: Expression => Compiler[List[Ast.CaseBlock]] =
+    (t: Expression) =>
+      (cs: List[Ast.CaseBlock]) => {
+        expressionCompiler(
+          cs.map { c =>
+              c.condition match {
+                case AnyMatch      => c.result
+                case e: Expression => Ast.AND(Ast.Equals(e, t), c.result)
+              }
+            }
+            .reduce(Ast.Coalesce(_, _)))
+    }
+
+  val matchCompiler: Compiler[Ast.Match] = (m: Ast.Match) =>
+    caseBlocksCompiler(m.term)(m.cases)
+
   val prefixCompiler: Compiler[Ast.PrefixOperator] = (t: Ast.PrefixOperator) =>
     ReaderT { s: State =>
       expressionCompiler(t.getRhs).run(s).map {
@@ -159,25 +178,30 @@ object Compiler {
       }
   }
 
-  val validationCompiler: ValidationCompiler[Ast.Validation] = (t: Ast.Validation) =>
-    ReaderT { j: Json =>
-      IO {
-        val path = "." + t.lhs.path.mkString(".")
-        val item = t.lhs.path
-          .foldLeft(j.hcursor.asInstanceOf[ACursor]) {
-            case (c, k) => c.downField(k)
+  val validationCompiler: ValidationCompiler[Ast.Validation] =
+    (t: Ast.Validation) =>
+      ReaderT { j: Json =>
+        IO {
+          val path = "." + t.lhs.path.mkString(".")
+          val item = t.lhs.path
+            .foldLeft(j.hcursor.asInstanceOf[ACursor]) {
+              case (c, k) => c.downField(k)
+            }
+            .focus
+            .getOrElse(Json.Null)
+          t.rhs match {
+            case "required" if item.isNull =>
+              invalidNel[String, Json](s"$path must not be null")
+            case "int" if !item.isNumber =>
+              invalidNel[String, Json](s"$path must be a number")
+            case "string" if !item.isString =>
+              invalidNel[String, Json](s"$path must be a string")
+            case "boolean" if !item.isBoolean =>
+              invalidNel[String, Json](s"$path must be a boolean")
+            case _ => validNel[String, Json](j)
           }
-          .focus
-          .getOrElse(Json.Null)
-        t.rhs match {
-          case "required" if item.isNull    => invalidNel[String, Json](s"$path must not be null")
-          case "int" if !item.isNumber      => invalidNel[String, Json](s"$path must be a number")
-          case "string" if !item.isString   => invalidNel[String, Json](s"$path must be a string")
-          case "boolean" if !item.isBoolean => invalidNel[String, Json](s"$path must be a boolean")
-          case _                            => validNel[String, Json](j)
         }
-      }
-  }
+    }
 
   val programCompiler: ProgramCompiler[Ast.Program] = (t: Ast.Program) =>
     ReaderT { s0: State =>
