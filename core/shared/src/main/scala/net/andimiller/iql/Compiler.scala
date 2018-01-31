@@ -128,6 +128,11 @@ object Compiler {
                     case (Json.Null, r) => r
                     case (l, _)         => l
                   }
+                case ifz: Ast.If =>
+                  (lhs, rhs) match {
+                    case (l, JBoolean(true)) => l
+                    case (_, _)              => Json.Null
+                  }
               }
               (s2, result)
           }

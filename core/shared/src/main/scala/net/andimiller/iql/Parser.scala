@@ -66,9 +66,9 @@ object Parser {
   val Notted = P("!" ~ space.? ~/ Expression).map(Ast.Not)
 
   // code
-  val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | bracketedExpression)
+  val Expression: Parser[Ast.Expression] = P(Notted | number | float | string | reference | boolean | array | matchBlock | bracketedExpression)
   val OperatorExpression: Parser[Ast.Expression] =
-    P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression).rep(min = 1))
+    P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|" | "if").! ~/ space.? ~/ Expression).rep(min = 1))
       .map {
         case (l, exps) =>
           exps.foldLeft(l) { case (acc, (operator, exp)) =>
@@ -82,6 +82,7 @@ object Parser {
               case "in" => Ast.In(acc, exp)
               case "+"  => Ast.Plus(acc, exp)
               case "|"  => Ast.Coalesce(acc, exp)
+              case "if" => Ast.If(acc, exp)
             }
           }
       }
@@ -91,8 +92,8 @@ object Parser {
   val function = P("required" | "int" | "bool" | "string").!
 
   val caseLHS: Parser[Ast.MatchLHS] = P(P("_").map{_ => Ast.AnyMatch} | Expression)
-  val caseBlock: Parser[Ast.CaseBlock] = P("|" ~/ space.? ~/ caseLHS ~ space.? ~/ goesTo ~ space.? ~/ Expression ~ newline).map{case (cond, res) => Ast.CaseBlock(cond, res)}
-  val matchBlock: Parser[Ast.Match] = P("match " ~/ Expression ~/ newline ~/ caseBlock.rep).map { case (e, cs) =>
+  val caseBlock: Parser[Ast.CaseBlock] = P("|" ~/ space.? ~/ caseLHS ~ space.? ~/ goesTo ~ space.? ~/ Expression ~ newline.?).map{case (cond, res) => Ast.CaseBlock(cond, res)}
+  val matchBlock: Parser[Ast.Match] = P("match " ~/ Expression ~/ newline ~/ caseBlock.rep(1)).map { case (e, cs) =>
       Ast.Match(e, cs.toList)
   }
 

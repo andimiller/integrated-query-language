@@ -41,9 +41,10 @@ object Ast {
   case class In(lhs: Expression, rhs: Expression)       extends InfixOperator(lhs, rhs)
   case class Plus(lhs: Expression, rhs: Expression)     extends InfixOperator(lhs, rhs)
   case class Coalesce(lhs: Expression, rhs: Expression) extends InfixOperator(lhs, rhs)
+  case class If(lhs: Expression, rhs: Expression)       extends InfixOperator(lhs, rhs)
 
   case class CaseBlock(condition: MatchLHS, result: Expression)
-  case class Match(term: Expression, cases: List[CaseBlock])
+  case class Match(term: Expression, cases: List[CaseBlock]) extends Expression
 
   // transforms
   sealed trait Transform
