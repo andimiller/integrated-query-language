@@ -57,14 +57,15 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
 
   "Evaluating a multi-line program with match blocks" should "work" in {
     val program =
-      """.result = match a
+      """.result = match .a
 | 1 => "one"
 | 2 => "two"
+| _ => "none"
 """
 
     val inputjson =
       """{
-        | "a": "2"
+        | "a": 2
         |}
       """.stripMargin
     Parser.program.parse(program) match {
@@ -72,7 +73,7 @@ class RealisticEvaluatorSpec extends FlatSpec with MustMatchers {
         val result = Compiler
           .programCompiler(v)
           .run(Compiler.State(parse(inputjson).right.toOption.getOrElse(Json.obj()), Json.obj()))
-        result.unsafeRunSync().output.noSpaces must equal("""{"a":{"value":"a","b":{"c":"nested"},"original":"originala"},"b":4}""")
+        result.unsafeRunSync().output.noSpaces must equal("""{"result":"two"}""")
       case f =>
         println(f)
         fail("unable to parse query")

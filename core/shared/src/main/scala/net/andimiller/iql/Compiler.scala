@@ -43,6 +43,7 @@ object Compiler {
   val expressionCompiler: Compiler[Ast.Expression] = (t: Ast.Expression) =>
     ReaderT { s: State =>
       t match {
+        case m: Ast.Match => matchCompiler(m).run(s)
         case r: Ast.Reference => referenceCompiler(r).run(s)
         case d: Ast.Data =>
           d match {
