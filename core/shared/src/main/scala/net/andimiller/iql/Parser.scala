@@ -70,22 +70,23 @@ object Parser {
     P(Expression ~/ space.? ~/ (("==" | "<" | ">" | "&&" | "||" | "^" | "in" | "+" | "|").! ~/ space.? ~/ Expression).rep(min = 1))
       .map {
         case (l, exps) =>
-          exps.foldLeft(l) { case (acc, (operator, exp)) =>
-            operator match {
-              case "==" => Ast.Equals(acc, exp)
-              case "<"  => Ast.LessThan(acc, exp)
-              case ">"  => Ast.MoreThan(acc, exp)
-              case "&&" => Ast.AND(acc, exp)
-              case "||" => Ast.OR(acc, exp)
-              case "^"  => Ast.XOR(acc, exp)
-              case "in" => Ast.In(acc, exp)
-              case "+"  => Ast.Plus(acc, exp)
-              case "|"  => Ast.Coalesce(acc, exp)
-            }
+          exps.foldLeft(l) {
+            case (acc, (operator, exp)) =>
+              operator match {
+                case "==" => Ast.Equals(acc, exp)
+                case "<"  => Ast.LessThan(acc, exp)
+                case ">"  => Ast.MoreThan(acc, exp)
+                case "&&" => Ast.AND(acc, exp)
+                case "||" => Ast.OR(acc, exp)
+                case "^"  => Ast.XOR(acc, exp)
+                case "in" => Ast.In(acc, exp)
+                case "+"  => Ast.Plus(acc, exp)
+                case "|"  => Ast.Coalesce(acc, exp)
+              }
           }
       }
   val bracketedExpression: Parser[Ast.Expression] = P("(" ~/ OperatorExpression ~ ")")
-  val toplevelExpression: Parser[Ast.Expression]     = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
+  val toplevelExpression: Parser[Ast.Expression]  = P(P(Expression ~ newline) | P(OperatorExpression ~ newline))
 
   val function = P("required" | "int" | "bool" | "string").!
 
@@ -95,6 +96,8 @@ object Parser {
       .map(Ast.Assignment.tupled)
   val validation = P(outputReference ~ space.? ~ is ~ space.? ~/ function)
     .map(Ast.Validation.tupled)
+  // and let binds
+  val let = P(P("let") ~ space.? ~ outputReference ~ equals ~/ space.? ~ toplevelExpression).map(Ast.Let.tupled)
 
   // full programs
   val newline = P("\n" | "\r\n" | "\r" | "\f" | End)

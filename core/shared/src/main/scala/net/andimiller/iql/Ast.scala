@@ -43,6 +43,7 @@ object Ast {
   // transforms
   sealed trait Transform
   case class Assignment(lhs: OutputField, rhs: Expression) extends Transform
+  case class Let(lhs: OutputField, rhs: Expression) extends Transform
 
   case class Validation(lhs: OutputField, rhs: String)
 
